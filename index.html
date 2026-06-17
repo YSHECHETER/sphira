@@ -1,1 +1,1833 @@
+﻿<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ספירת כמויות בשטח – י.שכטר</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+button,a{touch-action:manipulation;-webkit-appearance:none;cursor:pointer;}
+body{font-family:'Heebo',Arial,sans-serif;background:#eef1f4;color:#2c3e50;direction:rtl}
+:root{
+  --primary:#4a6278;
+  --dark:#2d3f50;
+  --teal:#F5C400;
+  --orange:#e67e22;
+  --green:#27ae60;
+  --light:#f5f7f9;
+  --border:#d0d9e0;
+  --text:#2c3e50;
+  --muted:#6b7c8d;
+}
+
+/* HEADER */
+.app-header{background:var(--dark);color:#fff;padding:0 20px;display:flex;flex-direction:column;align-items:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.3);transition:all 0.2s ease}
+.logo-area{display:flex;align-items:center;justify-content:center;gap:6px}
+.logo-img{height:95px;object-fit:contain;transition:height 0.2s ease}
+.logo-area{display:flex;align-items:center;justify-content:center;gap:6px;padding:2px 0}
+.logo-text{font-size:20px;font-weight:800;letter-spacing:2px;color:#fff}
+.logo-sub{font-size:11px;color:#afc2d0;letter-spacing:0.5px}
+.header-info{text-align:center;font-size:14px;color:#afc2d0;padding-top:4px;padding-bottom:4px}
+.header-info strong{color:#F5C400;display:block;font-size:20px;font-weight:900;margin-bottom:2px}
+
+/* SCREENS */
+.screen{display:none;min-height:calc(100vh - 60px)}
+.screen.active{display:block}
+
+/* START SCREEN */
+.start-wrap{max-width:480px;margin:0 auto;padding:30px 20px}
+.start-card{background:#fff;border-radius:16px;padding:32px;box-shadow:0 4px 20px rgba(0,0,0,0.1)}
+.start-title{font-size:26px;font-weight:800;color:var(--dark);text-align:center;margin-bottom:6px}
+.start-sub{font-size:15px;color:var(--muted);text-align:center;margin-bottom:28px}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;font-size:15px;font-weight:600;color:var(--dark);margin-bottom:8px}
+.form-group input,.form-group select{width:100%;padding:14px 16px;border:1.5px solid var(--border);border-radius:10px;font-size:17px;font-family:'Heebo',Arial;color:var(--text);background:#fff;transition:border-color .2s}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:var(--teal)}
+.btn-start{width:100%;padding:16px;background:var(--teal);color:#1A1D21;border:none;border-radius:10px;font-size:19px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer;transition:background .2s;margin-top:8px}
+.btn-start:hover{background:#d4a900}
+
+/* ROOM PICKER */
+.rooms-wrap{max-width:600px;margin:0 auto;padding:24px 20px}
+.section-title{font-size:18px;font-weight:700;color:var(--dark);margin-bottom:16px}
+.room-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.room-card{background:#fff;border-radius:14px;padding:16px 14px;box-shadow:0 2px 10px rgba(0,0,0,0.08);border:2px solid transparent;text-align:center}
+.room-card:hover{box-shadow:0 6px 18px rgba(0,0,0,0.13);border-color:var(--teal)}
+.room-icon{font-size:28px;margin-bottom:6px}
+.room-name{font-size:20px;font-weight:900;color:var(--dark)}
+.room-floor{font-size:14px;font-weight:700;color:var(--dark);margin-top:3px;opacity:.75}
+.room-count{font-size:15px;color:var(--teal);margin-top:5px;font-weight:800}
+.room-done{font-size:12px;color:var(--green);font-weight:600;margin-top:4px}
+.room-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px}
+.btn-room-count{padding:9px 4px;background:#F5C400;color:#1A1D21;border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer}
+.btn-room-count:hover{background:#d4a900}
+.btn-room-extra{padding:9px 4px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer}
+.btn-room-extra:hover{background:#3a5068}
+
+/* COUNT SCREEN */
+.count-header{background:var(--primary);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:14px;position:sticky;top:0;z-index:90;transition:top 0.1s}
+.btn-back{background:#fff;border:none;color:var(--dark);padding:10px 20px;border-radius:8px;font-size:16px;font-family:'Heebo',Arial;cursor:pointer;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+.btn-back:hover{background:#f0f3f5}
+.count-room-name{font-size:20px;font-weight:800}
+.count-room-floor{font-size:13px;opacity:.85}
+.items-wrap{max-width:800px;margin:0 auto;padding:16px 16px 90px}
+.section-block{background:#fff;border-radius:14px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.07);overflow:hidden}
+.section-header{background:var(--dark);color:#fff;padding:14px 18px;font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.section-header .section-arrow{margin-right:auto;transition:transform 0.25s ease;font-size:14px}
+.section-header.open .section-arrow{transform:rotate(180deg)}
+.section-badge{background:var(--teal);color:#fff;border-radius:20px;padding:3px 12px;font-size:13px;font-weight:600}
+.section-items{display:none}
+.section-items.open{display:block}
+.item-row{padding:16px;border-bottom:1px solid #f0f3f5;display:flex;flex-direction:column;gap:10px}
+.item-row:last-child{border-bottom:none}
+.item-top{display:flex;align-items:flex-start;gap:10px}
+.item-num{font-size:12px;color:var(--muted);white-space:nowrap;padding-top:2px;min-width:90px;font-weight:600}
+.item-desc{font-size:15px;color:var(--text);line-height:1.6;flex:1}
+.item-bottom{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.unit-badge{background:var(--dark);color:#fff;padding:6px 16px;border-radius:20px;font-size:17px;font-weight:800;white-space:nowrap}
+.estimate-label{font-size:14px;color:var(--muted);white-space:nowrap}
+.estimate-val{font-size:15px;font-weight:700;color:var(--dark)}
+.qty-input{width:100px;padding:10px 12px;border:2px solid var(--border);border-radius:8px;font-size:19px;font-weight:700;font-family:'Heebo',Arial;text-align:center;transition:border-color .2s,background .2s}
+.qty-input:focus{outline:none;border-color:var(--teal)}
+.qty-input.ok{border-color:var(--green);background:#f0fdf4;color:var(--green)}
+.qty-input.over{border-color:var(--orange);background:#fff8f0;color:var(--orange)}
+.notes-input{flex:1;min-width:140px;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'Heebo',Arial;color:var(--text);resize:none}
+.notes-input:focus{outline:none;border-color:var(--primary)}
+.count-footer{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);padding:14px 20px;display:flex;gap:10px;z-index:50;box-shadow:0 -2px 10px rgba(0,0,0,0.08)}
+.btn-done{flex:1;padding:15px;background:var(--teal);color:#1A1D21;border:none;border-radius:10px;font-size:18px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer}
+.btn-done:hover{background:#d4a900}
+
+/* SUMMARY SCREEN */
+.summary-wrap{max-width:540px;margin:0 auto;padding:24px 20px 40px}
+.summary-card{background:#fff;border-radius:16px;padding:28px;box-shadow:0 4px 20px rgba(0,0,0,0.1);margin-bottom:16px}
+.summary-title{font-size:22px;font-weight:800;color:var(--dark);margin-bottom:6px;text-align:center}
+.summary-sub{font-size:15px;color:var(--muted);text-align:center;margin-bottom:20px}
+.rooms-summary{display:flex;flex-direction:column;gap:8px;margin-bottom:20px}
+.room-sum-row{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--light);border-radius:8px}
+.room-sum-name{font-weight:600;font-size:16px}
+.room-sum-badge{background:var(--teal);color:#fff;border-radius:20px;padding:4px 12px;font-size:13px;font-weight:600}
+.btn-wa{width:100%;padding:15px;background:#25d366;color:#fff;border:none;border-radius:10px;font-size:17px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px}
+.btn-wa:hover{background:#1da851}
+.btn-email{width:100%;padding:15px;background:#4a6278;color:#fff;border:none;border-radius:10px;font-size:17px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;text-decoration:none}
+.btn-email:hover{background:#3a5068}
+.btn-xl{width:100%;padding:15px;background:#F5C400;color:#1A1D21;border:none;border-radius:10px;font-size:17px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px}
+.btn-xl:hover{background:#d4a900}
+.btn-newcount{width:100%;padding:13px;background:var(--light);color:var(--dark);border:1.5px solid var(--border);border-radius:10px;font-size:15px;font-weight:600;font-family:'Heebo',Arial;cursor:pointer}
+
+/* Progress bar */
+.progress-bar{height:4px;background:var(--teal);transition:width .3s}
+
+/* EXTRAS FORM */
+.extras-wrap{max-width:600px;margin:0 auto;padding:16px 14px 100px}
+.ex-card{background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:14px;padding:16px}
+.ex-card-title{font-size:15px;font-weight:700;color:var(--dark);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--teal)}
+.ex-label{display:block;font-size:14px;font-weight:700;margin-bottom:6px;color:var(--dark)}
+.ex-input{width:100%;padding:12px 13px;border:1.5px solid var(--border);border-radius:10px;font-family:'Heebo',Arial;font-size:15px;background:#fff;margin-bottom:14px;color:var(--text)}
+.ex-input:focus{outline:none;border-color:var(--teal)}
+.ex-textarea{width:100%;padding:12px 13px;border:1.5px solid var(--border);border-radius:10px;font-family:'Heebo',Arial;font-size:15px;background:#fff;margin-bottom:14px;color:var(--text);min-height:80px;resize:vertical}
+.ex-textarea:focus{outline:none;border-color:var(--teal)}
+.role-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px}
+.role-btn{padding:10px 4px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-family:'Heebo',Arial;font-size:13px;font-weight:600;color:var(--dark);cursor:pointer;text-align:center;transition:all .15s}
+.role-btn.on{background:var(--dark);color:#fff;border-color:var(--dark)}
+.ex-upload{display:block;border:2px dashed var(--border);border-radius:11px;padding:18px;text-align:center;color:var(--muted);font-size:14px;cursor:pointer;margin-bottom:10px;background:var(--light)}
+.ex-upload.has{border-color:var(--teal);color:var(--teal);border-style:solid}
+.ex-canvwrap{display:none;margin-bottom:10px}
+.ex-canvas{width:100%;border-radius:10px;border:1px solid var(--border);touch-action:none;display:block}
+.ex-tools{display:flex;gap:8px;margin:8px 0 4px;flex-wrap:wrap}
+.ex-tool{flex:1;padding:10px;border-radius:9px;border:1.5px solid var(--border);background:#fff;font-family:'Heebo',Arial;font-size:13px;font-weight:500;cursor:pointer}
+.ex-tool.on{background:var(--dark);color:#fff;border-color:var(--dark)}
+.ex-tool.red{color:#D7263D;font-weight:700}
+.ex-tool.red.on{background:#D7263D;color:#fff;border-color:#D7263D}
+#exPhotoPrev{width:100%;border-radius:10px;display:none;margin-bottom:8px}
+.ex-sig{width:100%;height:130px;border:1.5px solid var(--border);border-radius:10px;background:#fff;touch-action:none;display:block}
+.ex-hint{font-size:12px;color:var(--muted);margin-top:4px}
+.ex-footer{position:fixed;bottom:0;left:0;right:0;background:var(--dark);padding:12px 14px;display:flex;gap:8px;z-index:50}
+.ex-btn{flex:1;background:var(--teal);color:#1A1D21;border:none;border-radius:10px;padding:13px;font-family:'Heebo',Arial;font-size:14px;font-weight:700;cursor:pointer}
+.ex-btn.sec{background:var(--primary);flex:0 0 auto;padding:13px 14px}
+.ex-btn.back{background:#3d4248;flex:0 0 auto;padding:13px 14px}
+
+/* HISTORY */
+.btn-history{width:100%;padding:11px;background:var(--dark);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:600;font-family:'Heebo',Arial;cursor:pointer;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-history:hover{background:#1e2f3e}
+.hist-wrap{max-width:600px;margin:0 auto;padding:20px 16px}
+.hist-entry{background:#fff;border-radius:12px;padding:16px;margin-bottom:10px;box-shadow:0 2px 8px rgba(0,0,0,0.07);cursor:pointer;border:2px solid transparent;transition:border-color .15s}
+.hist-entry:hover{border-color:var(--teal)}
+.hist-date{font-size:12px;color:var(--muted);margin-bottom:4px}
+.hist-project{font-size:16px;font-weight:800;color:var(--dark)}
+.hist-room{font-size:13px;color:var(--primary);font-weight:600;margin-top:2px}
+.hist-stats{font-size:12px;color:var(--muted);margin-top:4px}
+.hist-empty{text-align:center;padding:60px 20px;color:var(--muted);font-size:15px}
+.hist-detail-wrap{max-width:700px;margin:0 auto;padding:16px 16px 80px}
+.hist-detail-header{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.07)}
+.hist-detail-title{font-size:18px;font-weight:800;color:var(--dark);margin-bottom:4px}
+.hist-detail-sub{font-size:13px;color:var(--muted)}
+.hist-item-row{display:flex;justify-content:space-between;align-items:flex-start;padding:10px 14px;border-bottom:1px solid #f0f3f5;gap:10px}
+.hist-item-row:last-child{border-bottom:none}
+.hist-item-desc{font-size:13px;color:var(--text);flex:1;line-height:1.4}
+.hist-item-num{font-size:11px;color:var(--muted);white-space:nowrap}
+.hist-qty{font-size:15px;font-weight:800;white-space:nowrap}
+.hist-qty.ok{color:var(--green)}
+.hist-qty.over{color:var(--orange)}
+.btn-del-hist{background:#fee2e2;color:#dc2626;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;font-family:'Heebo',Arial;cursor:pointer;white-space:nowrap}
+
+@media(max-width:480px){
+  .room-cards{grid-template-columns:1fr 1fr}
+  .item-desc{font-size:12px}
+  .count-footer{padding:10px 12px}
+}
+</style>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="app-header">
+  <div class="logo-area" style="justify-content:center;width:100%">
+    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABcQAAAXECAYAAADjyQ2OAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAW3hJREFUeNrs3duWHOV5P+CSVi5AuYI0NsYIkniMDQYEqI2zsUNsDd5AztSsFTvegKXxkZMTpOyPzAhjwMZrSYeAAxLenySqFpIQwoYe0Ob/TyRNJzeQuYNKfdMtGEuj3k13ddVXz8P6qJE009P11tezln796q0kAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP+fPTggAQAAABD0/3U/QgUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgIEEaA8OSAAAAAAE/X/djkAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOApe2QRALy/edUAAAAASUVORK5CYII=" alt="Y.Shechter" class="logo-img">
+  </div>
+    </div>
+  </div>
+  <div class="header-info" id="header-info" style="display:none">
+    <strong id="hi-project"></strong>
+    <span id="hi-foreman"></span>
+    <span id="hi-month"></span>
+  </div>
+</div>
+
+<!-- SCREEN 1: START -->
+<div class="screen active" id="screen-start">
+  <div class="start-wrap">
+    <div class="start-card">
+      <div class="start-title">ספירת כמויות בשטח</div>
+      <div class="start-sub">הזן פרטי פרויקט לפני תחילת הספירה</div>
+      <div class="form-group">
+        <label>שם הפרויקט</label>
+        <input type="text" id="inp-project" placeholder="לדוגמה: פקולטה לחקלאות – מעבדות">
+      </div>
+      <div class="form-group">
+        <label>שם מנהל עבודה</label>
+        <input type="text" id="inp-foreman" placeholder="שם מלא">
+      </div>
+      <div class="form-group">
+        <label>תאריך ספירה</label>
+        <input type="date" id="inp-month">
+      </div>
+      <div class="form-group">
+        <label>מספר טלפון לשליחת WhatsApp <span style="color:var(--muted);font-weight:400">(אופציונלי)</span></label>
+        <input type="tel" id="inp-phone" placeholder="0501234567">
+      </div>
+      <button class="btn-start" onclick="startApp()" ontouchend="startApp()">▶ התחל ספירה</button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 2: ROOM PICKER -->
+<div class="screen" id="screen-rooms">
+  <div class="rooms-wrap">
+    <div class="section-title">בחר חדר לספירה</div>
+    <div class="room-cards" id="room-cards"></div>
+    <button onclick="finishAllRooms()" style="width:100%;margin-top:16px;padding:14px;border-radius:12px;border:none;background:#27ae60;color:#fff;font-size:16px;font-weight:800;font-family:Heebo,Arial;cursor:pointer">✓ סיום ספירה</button>
+    <button class="btn-history" onclick="showHistory()" style="margin-top:12px">🕐 היסטוריית ספירות</button>
+  </div>
+</div>
+
+<!-- SCREEN 5: HISTORY LIST -->
+<div class="screen" id="screen-history">
+  <div class="hist-wrap">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <button onclick="showRooms()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:15px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">→ חזרה</button>
+      <div style="font-size:18px;font-weight:800;color:var(--dark);flex:1">היסטוריית ספירות</div>
+      <button onclick="downloadHistSummary()" style="background:#27ae60;color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">📊 ריכוז Excel</button>
+      <button id="btn-select-mode" onclick="toggleSelectMode()" style="background:#4a6278;color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">☑ בחר למחיקה</button>
+    </div>
+    <div id="hist-select-bar" style="display:none;background:#fff3cd;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:none;align-items:center;gap:10px">
+      <span id="hist-select-count" style="font-size:14px;font-weight:700;flex:1">0 נבחרו</span>
+      <button onclick="selectAllHist()" style="background:#4a6278;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">בחר הכל</button>
+      <button onclick="deleteSelectedHist()" style="background:#E8590C;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">🗑 מחק נבחרים</button>
+    </div>
+    <div id="hist-list"></div>
+  </div>
+</div>
+
+<!-- SCREEN 6: HISTORY DETAIL -->
+<div class="screen" id="screen-hist-detail">
+  <div class="hist-detail-wrap">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <button onclick="showHistory()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:15px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">→ חזרה</button>
+      <div id="hist-detail-title" style="font-size:17px;font-weight:800;color:var(--dark);flex:1"></div>
+      <button id="hist-del-btn" class="btn-del-hist" onclick="deleteHistEntry()">🗑 מחק</button>
+    </div>
+    <div id="hist-detail-content"></div>
+  </div>
+</div>
+
+<!-- SCREEN 7: EXTRAS FORM -->
+<div class="screen" id="screen-extras">
+  <div class="extras-wrap">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <button onclick="showRooms()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:15px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">→ חזרה</button>
+      <div style="font-size:17px;font-weight:800;color:var(--dark);flex:1">תיעוד תוספת / שינוי</div>
+    </div>
+
+    <div class="ex-card">
+      <div class="ex-card-title">פרטים כלליים</div>
+      <label class="ex-label">פרויקט</label>
+      <input class="ex-input" id="ex-proj" type="text" placeholder="שם הפרויקט">
+      <label class="ex-label">חדר / מיקום</label>
+      <input class="ex-input" id="ex-room" type="text" placeholder="מספר חדר">
+      <label class="ex-label">שם העובד</label>
+      <input class="ex-input" id="ex-worker" type="text" placeholder="שם מלא">
+      <label class="ex-label">תפקיד</label>
+      <div class="role-grid">
+        <button class="role-btn" id="role-mgr" onclick="setRole('מנהל עבודה')">מנהל עבודה</button>
+        <button class="role-btn" id="role-sub" onclick="setRole('קבלן משנה')">קבלן משנה</button>
+        <button class="role-btn" id="role-elec" onclick="setRole('חשמלאי')">חשמלאי</button>
+      </div>
+      <label class="ex-label">תיאור התוספת / השינוי</label>
+      <textarea class="ex-textarea" id="ex-desc" placeholder="מה בוצע מעבר לחוזה, איפה, ולמה"></textarea>
+      <label class="ex-label">מי ביקש / אישר בשטח</label>
+      <input class="ex-input" id="ex-who" type="text" placeholder="שם המפקח / נציג הלקוח">
+    </div>
+
+    <div class="ex-card">
+      <div class="ex-card-title">1 · התוכנית — סימון השינוי</div>
+      <label class="ex-upload" id="exUpPlan">📐 צלם או בחר את התוכנית<input type="file" accept="image/*" id="exPlanFile" style="display:none"></label>
+      <div class="ex-canvwrap" id="exPlanWrap">
+        <canvas class="ex-canvas" id="exPlanCanvas"></canvas>
+        <div class="ex-tools">
+          <button class="ex-tool red on" id="exTRed">✏️ סימון אדום</button>
+          <button class="ex-tool" id="exTUndo">↩️ בטל</button>
+          <button class="ex-tool" id="exTClear">נקה</button>
+        </div>
+        <div class="ex-hint">סמן באצבע את מיקום והיקף השינוי</div>
+      </div>
+    </div>
+
+    <div class="ex-card">
+      <div class="ex-card-title">2 · תמונת העבודה שבוצעה</div>
+      <label class="ex-upload" id="exUpPhoto">📷 צלם או בחר תמונה<input type="file" accept="image/*" id="exPhotoFile" style="display:none"></label>
+      <img id="exPhotoPrev">
+    </div>
+
+    <div class="ex-card">
+      <div class="ex-card-title">3 · חתימת המאשר</div>
+      <canvas class="ex-sig" id="exSigCanvas"></canvas>
+      <div class="ex-tools" style="margin-top:8px"><button class="ex-tool" id="exSigClear">נקה חתימה</button></div>
+      <div class="ex-hint">המפקח / נציג הלקוח חותם כאן</div>
+    </div>
+  </div>
+
+  <div class="ex-footer">
+    <button class="ex-btn back" onclick="showRooms()">→ חזרה</button>
+    <button class="ex-btn sec" onclick="exSaveImg()">💾 שמור תמונה</button>
+    <button class="ex-btn" onclick="exShare()">📤 שלח</button>
+  </div>
+</div>
+
+<!-- SCREEN 3: COUNT -->
+<div class="screen" id="screen-count">
+  <div class="count-header">
+    <button class="btn-back" onclick="showRooms()">→ חזרה</button>
+    <div>
+      <div class="count-room-name" id="count-room-name"></div>
+      <div class="count-room-floor" id="count-room-floor"></div>
+    </div>
+  </div>
+  <div class="items-wrap" id="items-container"></div>
+  <div class="count-footer">
+    <button class="btn-done" onclick="saveRoom()">✓ סיום ספירת חדר זה</button>
+  </div>
+</div>
+
+<!-- SCREEN 4: SUMMARY -->
+<div class="screen" id="screen-summary">
+  <div class="summary-wrap">
+    <div style="margin-bottom:12px">
+      <button onclick="showRooms()" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:12px 22px;font-size:16px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer;width:100%">→ חזרה לבחירת חדר</button>
+    </div>
+    <div class="summary-card">
+      <div class="summary-title">✓ סיכום ספירה</div>
+      <div class="summary-sub" id="sum-info"></div>
+      <div class="rooms-summary" id="rooms-summary"></div>
+      <button class="btn-wa" onclick="sendWhatsApp()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        שלח ל-WhatsApp
+      </button>
+      <a id="btn-email" class="btn-email" href="#" onclick="sendEmail(event)">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        שלח במייל למשרד
+      </a>
+      <button class="btn-xl" onclick="downloadExcel()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11zm-3.5-8.5l-1.5 2.5-1.5-2.5H10l2.25 3.5L10 19h1.5l1.5-2.5 1.5 2.5H16l-2.25-3.5L16 11.5h-1.5z"/></svg>
+        הורד קובץ Excel
+      </button>
+      <button class="btn-newcount" onclick="newCount()">+ ספירה חדשה</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== FIREBASE CONFIG ==========
+// החלף את הערכים כאן בערכים מ-Firebase Console שלך
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyD9RI3bRqd-HSqzkubNptg8FmtpoauZNec",
+  authDomain: "yshechter-count.firebaseapp.com",
+  projectId: "yshechter-count",
+  storageBucket: "yshechter-count.firebasestorage.app",
+  messagingSenderId: "396054343900",
+  appId: "1:396054343900:web:6c068d9a72528505e48419"
+};
+let db = null;
+try {
+  if(FIREBASE_CONFIG.apiKey !== "REPLACE_ME"){
+    firebase.initializeApp(FIREBASE_CONFIG);
+    db = firebase.firestore();
+  }
+} catch(e){}
+
+// ========== DATA ==========
+
+const ROOMS = [
+  {id:'r216', name:'חדר 216', floor:'קומה 2', type:'משרד קטן', sheet:1, icon:'🏢'},
+  {id:'r309', name:'חדר 309', floor:'קומה 3', sheet:1, icon:'🔬'},
+  {id:'r308', name:'חדר 308', floor:'קומה 3', sheet:1, icon:'🔬'},
+  {id:'r204', name:'חדר 204', floor:'קומה 2 דרום', sheet:2, icon:'🧪'},
+  {id:'r002', name:'חדר 002', floor:'קומה 0 צפון', sheet:2, icon:'🏗️'},
+  {id:'r006', name:'חדר 006', floor:'קומה 0 צפון', sheet:2, icon:'🏗️'},
+];
+
+// Sheet 1 sections (rooms 216, 309, 308)
+const SECTIONS_S1 = [
+  {name:'נקודות', num:'81.01', items:[
+    {id:'81.01.002',num:'02.81.01.002',desc:'נקודת מאור',unit:'נק\'',est:20},
+    {id:'81.01.003',num:'02.81.01.003',desc:'תוספת למחיר נקודת מאור עבור מפסק מחליף',unit:'יח\'',est:2},
+    {id:'81.01.004',num:'02.81.01.004',desc:'נקודת מקבץ שקעים לחשמל ולתקשורת הכוללת: 4 שקעי חשמל בצבעים שונים (לבן, כחול, אדום) כולל נקודת ח"ק 16A מלאה למקבץ, הכנה ל-4 נקודות תקשורת ע"י שתי צינורות 25 מ"מ ממגש כבלים לתקשורת במעבדה, לרבות 2 כיסויי דמה. המחיר כולל קופסת "אופיס ניסקו" להתקנה גלויה או סמויה, או משולבים בתעלת PVC',unit:'נק\'',est:1},
+    {id:'81.01.005',num:'02.81.01.005',desc:'נקודת חיבור קיר 16A סיום באביזר בודד גלוי או סמוי בקיר או סיום באביזר N1 "ניסקו" מותקן בצמוד לתעלת כבלים או שקע חד פאזי גוויס תקני משולב בתוך התעלה בכל צבע שיבחר המזמין. לרבות מתאמים מקוריים של ספק התעלה שמתאימים לשקעים שיסופקו',unit:'נק\'',est:15},
+    {id:'81.01.006',num:'02.81.01.006',desc:'תוספת למחיר נקודת חיבור קיר רגילה 16A עבור בית תקע בודד מוגן מים',unit:'יח\'',est:2},
+    {id:'81.01.007',num:'02.81.01.007',desc:'תוספת למחיר נקודת חיבור קיר רגילה 16A עבור בית תקע כפול מוגן מים',unit:'יח\'',est:5},
+    {id:'81.01.008',num:'02.81.01.008',desc:'נקודת חיבור קיר חד פאזית 16A סיום באביזר כפול (שני שקעים צמודים 16A) סמוי בקיר או באביזר N2 "ניסקו" מותקן בצמוד לתעלת כבלים או 2 שקעים חד פאזיים דוגמת שקעי גוויס תקניים משולבים בתוך התעלה',unit:'נק\'',est:5},
+    {id:'81.01.009',num:'02.81.01.009',desc:'נקודת חיבור קיר חד פאזית 16A סיום באביזר עם שלושה שקעים צמודים 16A סמוי בקיר או באביזר N3 "ניסקו" מותקן בצמוד לתעלת כבלים או 3 שקעים חד פאזיים דוגמת שקעי גוויס תקניים משולבים בתוך התעלה',unit:'נק\'',est:20},
+    {id:'81.01.010',num:'02.81.01.010',desc:'נקודת מפסק הדלקה וכיבוי תאורה מרכזי, כבל 3X1.5 N2XY בצינור 20 מ"מ כבה מאליו מלוח החשמל, סיום במפסק גוויס מואר',unit:'נק\'',est:1},
+    {id:'81.01.011',num:'02.81.01.011',desc:'נקודת לחצן הפסקת חשמל חרום ללוח חשמל מעבדה, סיום בלחצן פטריה ננעל בסיבוב עם כיסוי "קלפה" עם צירים לכיסוי הלחצן, ושילוט מתאים',unit:'נק\'',est:2},
+    {id:'81.01.012',num:'02.81.01.012',desc:'נקודת חיבור הארקה ע"י מוליך נחושת חשוף ושזור 6 ממ"ר וצינור כבה מאליו מתאים',unit:'יח\'',est:12},
+    {id:'81.01.013',num:'02.81.01.013',desc:'נקודת חיבור הארקה לרצפה אנטי סטטית ע"י מוליך נחושת חשוף ושזור 10 ממ"ר וצינור כבה מאליו מתאים, סיום בקופסת גוויס 4 מקום שקועה בקיר עם מכסה וברגים, לרבות חיבור מוליך הארקת רצפה במהדק קנדי',unit:'יח\'',est:3},
+    {id:'81.01.014',num:'02.81.01.014',desc:'נקודת חיבור הארקה ע"י מוליך נחושת חשוף ושזור 10 ממ"ר וצינור כבה מאליו מתאים',unit:'יח\'',est:10},
+    {id:'81.01.015',num:'02.81.01.015',desc:'נקודת חיבור הארקה ע"י מוליך נחושת חשוף ושזור 16 ממ"ר וצינור כבה מאליו מתאים',unit:'נק\'',est:4},
+    {id:'81.01.016',num:'02.81.01.016',desc:'נקודת הכנה לתקשורת אחודה בודדת או WIFI (רק נקודה שאינה כלולה במקבץ "אופיס ניסקו") הכוללת צינור ø25 סמוי בקיר מהנקודה ועד לתעלת כבלים צמודה לתקרה. סיום בקופסת גוויס שקועה בקיר, גלויה או בתוך תעלה ייעודית לרבות כיסויי דמה',unit:'נק\'',est:8},
+    {id:'81.01.017',num:'02.81.01.017',desc:'נקודת טלפון אנלוגי כבל 4 זוג בצינור 20 מ"מ סיום בשקע טלפון מתאים וחיבור לקופסת תקשורת במבנה',unit:'נק\'',est:1},
+    {id:'81.01.018',num:'02.81.01.018',desc:'נקודת הזנה תלת פאזית 3x25A ראשית מלוח חשמל ועד ליחידת אלפסק או מיחידת אלפסק ללוח חשמל. כבל 5X6 N2XY מושחל בצינור קוברה 50 מ"מ, סיום במפסק פקט 40A 3x על הקיר ליד היחידה',unit:'נק\'',est:3},
+    {id:'81.01.019',num:'02.81.01.019',desc:'נקודת הזנה תלת פאזית ממנתק על הקיר ליד היחידה האלפסק ועד ליחידת אלפסק. בכבל נחושת גמיש דגם 5x6 N2XY-K (RVK) ממ"ר מושחל בצינור קוברה 40 מ"מ, מחובר בשתי הקצוות כולל חיבור מושלם ליחידה ולמנתק',unit:'נק\'',est:3},
+    {id:'81.01.020',num:'02.81.01.020',desc:'נקודת פיקוד להעברה שקטה של מערכת אלפסק, כבל 3X1.5 ממ"ר בצינור 20 מ"מ וחיבור בשתי הקצות בלוח וביחידת האלפסק',unit:'נק\'',est:1},
+    {id:'81.01.021',num:'02.81.01.021',desc:'נקודה הכנה לטרמוסטט, צינור ø20 מ"מ וחוט משיכה מיחידת מ"א לתרמוסטט',unit:'יח\'',est:2},
+    {id:'81.01.022',num:'02.81.01.022',desc:'נקודת חיבור מוליך הארקה לצנרת מתכתית באמצעות שלת הארקה כבדה מגולוונת עד "3',unit:'יח\'',est:1},
+    {id:'81.01.023',num:'02.81.01.023',desc:'נקודת הזנה חד פאזי 16A ליחידת מ"א בגג כולל מפסק פקט 2X16A מוגן מים ליד היחידה',unit:'נק\'',est:2},
+    {id:'81.01.024',num:'02.81.01.024',desc:'חיבור מוליך הארקה לצנרת מתכתית באמצעות שלת הארקה כבדה מגולוונת עד "3',unit:'יח\'',est:1},
+    {id:'81.01.025',num:'02.81.01.025',desc:'גשר הארקה לשעון מים מפס שטוח מגולוון 20X2 מ"מ כולל חבקים',unit:'יח\'',est:1},
+  ]},
+  {name:'גופי תאורה', num:'81.02', items:[
+    {id:'81.02.002',num:'02.81.02.002',desc:'ג"ת שלט יציאה חד תכליתי (כבוי במצב שגרה) מאלומניום מלוטש עם 6 נורות לד, זמן עבודה 90 דקות, עוצמת תאורה 60%, בהתקנה בתקרה או על הקיר, שילוט "יציאה" וסימון חץ אלקטרולייט, דגם EL622LED אלקטרוזן, PROFILE MAXI-LED, או סדרת XY-VEX מתוצרת "אנלטק". מאושרי מכון התקנים לת"י 20 חלק 2.22',unit:'יח\'',est:3},
+    {id:'81.02.003',num:'02.81.02.003',desc:'ג"ת חירום חד תכליתי לתאורת התמצאות מבוסס נורות לד, תפוקה 170 לומן, זמן הארה 180 דקות. ללא התראות קוליות. כולל סוללה נטענת ניקל מטל 2200mAh 3.6V, מבדק תקינות אינטגראלי ואישור מכון התקנים לתקן 20 חלק 2.22',unit:'יח\'',est:2},
+    {id:'81.02.004',num:'02.81.02.004',desc:'ג"ת לד 18W עגול מפוליאסטר בצבע לבן, מותקן גלוי על הטיח או שקוע בתקרה, מוגן מים IK10-IP65, שטף אור 2160 לומן, כיסוי פוליקרבונט אנטי ונדלי, דגם "גלבוע פרו" ספק: געש תאורה',unit:'יח\'',est:1},
+    {id:'81.02.005',num:'02.81.02.005',desc:'ג"ת פנל לד איכותי 36W במידות 60X60X5 ס"מ שקוע בתקרה אקוסטית, תפוקת אור 4320LM לפחות, CCT=4000K, עם דרייבר איכותי דוגמת פיליפס או עין השופט, הגנה IP40, אישור פיקוד העורף',unit:'יח\'',est:8},
+    {id:'81.02.006',num:'02.81.02.006',desc:'ג"ת לד בהספק 43W במידות 60X60 ס"מ עשוי מפרופיל אלומיניום צבוע בתנור לבן, שקוע בתקרה, מתאים לחדרים נקיים ISO3 IP65 CLASS 10,000, דרייבר איכותי, תפוקת אור 146 לומן/וואט, גוון 4000K, דגם LUG MEDUCA 2',unit:'יח\'',est:3},
+  ]},
+  {name:'אינסטלציה חשמלית', num:'81.03', items:[
+    {id:'81.03.002',num:'02.81.03.002',desc:'תעלה פלסטית מחומר כבה מאליו בצבע לבן עם מכסה, במידות 120X60 מ"מ עם מחיצת הפרדה, להתקנה על הקיר או בריהוט, דוגמת IBOCO של "ישראלוקס" או GGK של "קשטן". מחיר התעלה כולל סופיות מקוריות, הסתעפויות, זויות ומחזיקי כבלים פנימיים',unit:'מ"א',est:10},
+    {id:'81.03.003',num:'02.81.03.003',desc:'תעלה פלסטית כנ"ל אך במידות 60X40 מ"מ',unit:'מ"א',est:5},
+    {id:'81.03.004',num:'02.81.03.004',desc:'מגש רשת לכבלים מגולוון גלוון קר במידות 20X8.5 ס"מ, מותקן על הקיר ו/או מתחת לתקרה בטון באמצעות קונזולות, מתלים וחיזוקים תעשייתיים דוגמת MFK של ליראד, מרחקים כל 1.5 מטר לפחות. כולל חיזוקים, קונזולות ומתלים',unit:'מ"א',est:30},
+    {id:'81.03.005',num:'02.81.03.005',desc:'מגש רשת לכבלים מגולוון גלוון קר במידות 10X8.5 ס"מ, מותקן על הקיר ו/או מתחת לתקרה בטון באמצעות קונזולות, מתלים וחיזוקים תעשייתיים',unit:'מ"א',est:30},
+    {id:'81.03.006',num:'02.81.03.006',desc:'צינור "מריכף" כבה מאליו או "מרירון" 20 מ"מ שאינו כלול במחיר נקודה',unit:'מ"א',est:20},
+    {id:'81.03.007',num:'02.81.03.007',desc:'צינור "מריכף" כבה מאליו או "מרירון" 25 מ"מ שאינו כלול במחיר נקודה',unit:'מ"א',est:20},
+    {id:'81.03.008',num:'02.81.03.008',desc:'צינור "מריכף" כבה מאליו או "מרירון" בקוטר 32 מ"מ כולל חוט משיכה מנילון',unit:'מ"א',est:20},
+    {id:'81.03.009',num:'02.81.03.009',desc:'צינור שרשורי מחוזק דגם "קוברה" דו שכבתי בקוטר חיצוני 50 מ"מ כולל חבל משיכה בקוטר 8 ממ"ר',unit:'מ"א',est:15},
+    {id:'81.03.010',num:'02.81.03.010',desc:'ירידת צנרת חשמל ותקשורת סמויה בקיר לתעלת כבלים היקפית הכוללת: עד 6 צינורות 25 חשמל/תקשורת באורך כ-2 מטר מחלל תקרה, כולל סיתות בקירות וביטון לאחר הנחת צנרת. המחיר כולל הסיתות, הצנרת והביטון קומפלט לירידה אחת',unit:'קומפלט',est:3},
+    {id:'81.03.011',num:'02.81.03.011',desc:'כבל נחושת (5X2.5 N2XY(XLPE ממ"ר מושחלים בצנרת או מונחים ע"ג מגש כבלים ומחוברים בשתי הקצוות – רק כבל שאינו כלול במחיר נקודה',unit:'מ"א',est:20},
+    {id:'81.03.012',num:'02.81.03.012',desc:'כבל נחושת (5X6 N2XY(XLPE ממ"ר מושחלים בצנרת או מונחים ע"ג מגש כבלים ומחוברים בשתי הקצוות – רק כבל שאינו כלול במחיר נקודה',unit:'מ"א',est:20},
+    {id:'81.03.013',num:'02.81.03.013',desc:'כבל נחושת (5X10 N2XY(XLPE ממ"ר מושחלים בצנרת או מונחים ע"ג מגש כבלים ומחוברים בשתי הקצוות',unit:'מ"א',est:50},
+    {id:'81.03.014',num:'02.81.03.014',desc:'מוליך נחושת 10 ממ"ר שזור מבודד מונח ע"ג מגש כבלים, לרבות מהדקים קנדיים בכמות הנדרשת להארקת כל קטע תעלת רשת ומחובר בשני קצותיו',unit:'מ"א',est:20},
+    {id:'81.03.015',num:'02.81.03.015',desc:'פס הארקה מותקן על הקיר ע"ג מבודדים, עשוי מנחושת 40X4 מ"מ, לרבות כל ברגי החיבור, אומים, דיסקיות פליז, שילוט וכל חומרי העזר. באורך 30 ס"מ לפחות',unit:'קומפלט',est:2},
+    {id:'81.03.016',num:'02.81.03.016',desc:'איטום פתחים לכבלי חשמל ותקשורת למעבר אש ועשן במשך שעתיים באמצעות חומר איטום אלסטומרי מאושר ע"י שרותי כבאות ירושלים, דוגמת FS 1900 של אבצום. המחיר לפי שטח כולל מצטבר',unit:'מ"ר',est:0.3},
+  ]},
+  {name:'לוח חשמל מעבדה', num:'81.04', items:[
+    {id:'81.04.002',num:'02.81.04.002',desc:'תוספת מאמ"ת תלת פאזי 10KA 3X63A תקן IEC898 בלוח קיים, כולל כל העבודות הנדרשות בלוח, עבודת שטח ע"י חווט לוחות מנוסה',unit:'יח\'',est:1},
+    {id:'81.04.003',num:'02.81.04.003',desc:'תוספת מאמ"ת תלת פאזי 10KA 3X32A תקן IEC898 בלוח קיים, כולל כל העבודות הנדרשות בלוח, עבודת שטח ע"י חווט לוחות מנוסה',unit:'יח\'',est:1},
+    {id:'81.04.004',num:'02.81.04.004',desc:'מאמ"ת תלת פאזי 10KA 3X63A תקן IEC898',unit:'יח\'',est:1},
+    {id:'81.04.005',num:'02.81.04.005',desc:'מאמ"ת תלת פאזי 3X32A עד 10KA 3X40A תקן IEC898',unit:'יח\'',est:5},
+    {id:'81.04.006',num:'02.81.04.006',desc:'סליל הפסקה למאמ"ת עד 3X63A',unit:'יח\'',est:3},
+    {id:'81.04.007',num:'02.81.04.007',desc:'מאמ"ת תלת פאזי 3X32A עד 10KA 3X40A תקן IEC898',unit:'יח\'',est:5},
+    {id:'81.04.008',num:'02.81.04.008',desc:'מאמ"ת תלת פאזי 3X16A עד 10KA 3X25A תקן IEC898',unit:'יח\'',est:3},
+    {id:'81.04.009',num:'02.81.04.009',desc:'מאמ"ת תלת פאזי 15KA 3X6A תקן IEC898',unit:'יח\'',est:5},
+    {id:'81.04.010',num:'02.81.04.010',desc:'מאמ"ת חד פאזי עד 10KA 1X32A תקן IEC898',unit:'יח\'',est:40},
+    {id:'81.04.011',num:'02.81.04.011',desc:'מאמ"ת חד פאזי עד 10KA 16A+N תקן IEC898',unit:'יח\'',est:1},
+    {id:'81.04.012',num:'02.81.04.012',desc:'מאמ"ת דו פאזי עד 10KA 2X16A תקן IEC898',unit:'יח\'',est:1},
+    {id:'81.04.013',num:'02.81.04.013',desc:'ממסר פחת עד 30 מ"א 4X40A דגם A',unit:'יח\'',est:7},
+    {id:'81.04.014',num:'02.81.04.014',desc:'ממסר פחת עד 30 מ"א 2X40A דגם A',unit:'יח\'',est:3},
+    {id:'81.04.015',num:'02.81.04.015',desc:'מפסק בורר 10A פיקוד שלושה מצבים 1-0-2',unit:'יח\'',est:2},
+    {id:'81.04.016',num:'02.81.04.016',desc:'מגען AC3 4X40A עם מגע עזר לחיווי מצב מגען, תוצרת טלמכניק או ש"ע',unit:'יח\'',est:1},
+    {id:'81.04.017',num:'02.81.04.017',desc:'מגען AC3 3X16A עם מגע עזר לחיווי מצב מגען, תוצרת טלמכניק או ש"ע',unit:'יח\'',est:1},
+    {id:'81.04.018',num:'02.81.04.018',desc:'מפסק פיקוד קפיצי 10A עם נעילה במפתח במצב פתוח, לפיקוד מערכת העברה שקטה (חמה) למערכת אלפסק',unit:'יח\'',est:1},
+    {id:'81.04.019',num:'02.81.04.019',desc:'מפסק בעומס עד 4X40A בורר 3 מצבים 1-0-2, כולל מגע עזר לחיווי מצב מפסק',unit:'יח\'',est:2},
+    {id:'81.04.020',num:'02.81.04.020',desc:'מנורת סימון LED לסימון פאזות או לחיווי אתראות עם כיסוי צבעוני 220V כולל בסיס מתאים',unit:'יח\'',est:15},
+    {id:'81.04.021',num:'02.81.04.021',desc:'שעון דיגיטלי לפיקוד עם תכנית יומית שבועית, סוללת גיבוי THEBEN דגם TR611 וכיתוב עברית',unit:'יח\'',est:1},
+    {id:'81.04.022',num:'02.81.04.022',desc:'יחידת פיקוד מסוג ISO (מצג בקרה) לניתוק מפסק ראשי ו/או מ"א בזמן אש עם 2 מגעים יבשים לפיקוד',unit:'יח\'',est:1},
+    {id:'81.04.023',num:'02.81.04.023',desc:'יחידת פיקוד מסוג ISO (מצג בקרה) לניתוק מפסק ראשי ו/או מ"א בזמן אש עם 4 מגעים יבשים לפיקוד',unit:'יח\'',est:1},
+    {id:'81.04.024',num:'02.81.04.024',desc:'מבנה לוח חשמל ראשי מעבדות בקומה 3 אגף דרום, מחולק ל-3 שדות: בלתי חיוני, גנרטור ושדה UPS, עם פאנלים פנימיים ודלתות. מפח קדופריט מגולוון צבוע בתנור. כולל פסי צבירה עד 4x100A, מהדקים, פסי אפס והארקה, חיווט, שילוט. מחיר לפי שטח חזית נטו במ"ר',unit:'מ"ר',est:3.5},
+  ]},
+  {name:'מערכת גילוי אש וכריזת חירום', num:'81.05', items:[
+    {id:'81.05.002',num:'02.81.05.002',desc:'גלאי אש פוטו אלקטרי ממוען אנלוגי למערכת גילוי אש "טלפייר"',unit:'יח\'',est:3},
+    {id:'81.05.003',num:'02.81.05.003',desc:'לחצן אזעקת אש',unit:'יח\'',est:1},
+    {id:'81.05.004',num:'02.81.05.004',desc:'מנורת סימון לגלאי אש',unit:'יח\'',est:2},
+    {id:'81.05.005',num:'02.81.05.005',desc:'צופר אזעקת אש להתקנה פנימית, אור קולי עם נצנץ',unit:'יח\'',est:1},
+    {id:'81.05.006',num:'02.81.05.006',desc:'כרטיס כתובתי עם מגעים יבשים דגם 723-ADR הכולל 2 מוצאים כתובתיים ומעגל מבוא בודד להפסקת מ"א או בקרת דלתות במעבדה במצב אש',unit:'יח\'',est:1},
+    {id:'81.05.007',num:'02.81.05.007',desc:'חיבור וחיווט כל האלמנטים למרכזית גילוי אש בבניין, לרבות תכנות המערכת, חיבור המעבדה לרכזת ג"א קיימת ובדיקת תקינות בסיום העבודה',unit:'קומפלט',est:1},
+    {id:'81.05.008',num:'02.81.05.008',desc:'נקודת גילוי אש הכוללת: כבל תקני 4X0.8 מושחל בצינור/מוביל קיים, מרכזת ג"א עד יחידת הקצה (גלאי, מנורת סימון, לוח אתראות משני, לחצן, צופר אש, יחידת כתובת ג"א) או בין שתי יחידות קצה סמוכות',unit:'נק\'',est:5},
+  ]},
+  {name:'פירוק ופינוי מערכת UPS קיימת', num:'81.06', items:[
+    {id:'81.06.001',num:'02.81.06.001',desc:'פירוק מכני וחשמלי של מערכת אלפסק קיימת ופינויה מהאתר, מתואם עם המזמין בקמפוס למחסן המזמין בבניין',unit:'קומפלט',est:1},
+  ]},
+  {name:'מערכת אלפסק חדשה 10 kVA', num:'81.07', items:[
+    {id:'81.07.001',num:'02.81.07.001',desc:'העמדה, התקנה מכנית וחשמלית של מערכת אלפסק עד 3/3-10KVA עד להפעלה מושלמת (המחיר אינו כולל קווי הזנה ראשיים מלוח חשמל ליחידה שיתומחרו בסעיפים נפרדים)',unit:'קומפלט',est:1},
+    {id:'81.07.002',num:'02.81.07.002',desc:'אספקה בלבד של מערכת אלפסק בהספק 3/3-10KVA, כניסה ומוצא, דגם 93E-15kVA. כוללת כל מערכות העזר שבמפרט הטכני המיוחד, לרבות מצברים למשך 15 דקות בעומס 100%, 3 ענפים לקבלת יתירות, 96 מצברים דגם PHR-1236 בהספק 9AH. כולל כרטיס EATON Relay MS וכרטיס תקשורת SNMP+MODBUS',unit:'קומפלט',est:1},
+    {id:'81.07.003',num:'02.81.07.003',desc:'שנאי מבדל מאושר מכון התקנים, מותקן במארז מאוורר ומוארק, בהספק 10 קו"א Y/Y 400/400V, לרבות מנתק זרם 3X25A מותקן על גבי הגבהה קבועה ברצפה וחיבור מושלם במוצא האלפסק ולערכת הארקה שקטה',unit:'קומפלט',est:1},
+  ]},
+  {name:'מערכת נעילת דלתות חשמלית', num:'81.09', items:[
+    {id:'81.09.001',num:'02.81.09.001',desc:'מערכת פיקוד ושליטה מושלמת לדלת כניסה למעבדה הכוללת: קודן חיצוני, ספק כח, כבלי חשמל ופיקוד, מגע יבש לפתיחת הדלת במצב אתראת אש. מערכת מסוג PK-12 תוצרת Wintec. לרבות הכנה לכרטיסי קרבה מגנטיים, אספקה ותכנות של כרטיסים. כולל מנעול חשמלי 12VDC (N.C) דוגמת YALE',unit:'קומפלט',est:1},
+  ]},
+];
+
+// Sheet 2 sections (room 204)
+const SECTIONS_S2 = [
+  {name:'נקודות', num:'83.01', items:[
+    {id:'83.01.002',num:'02.83.01.002',desc:'נקודת מאור',unit:'נק\'',est:75},
+    {id:'83.01.003',num:'02.83.01.003',desc:'תוספת למחיר נקודת מאור עבור מפסק מחליף',unit:'יח\'',est:4},
+    {id:'83.01.004',num:'02.83.01.004',desc:'נקודת מקבץ שקעים לחשמל ולתקשורת הכוללת: 4 שקעי חשמל בצבעים שונים (לבן, כחול, אדום) כולל נקודת ח"ק 16A מלאה למקבץ, הכנה ל-2 נקודות תקשורת ע"י שתי צינורות 25 מ"מ ממגש כבלים לתקשורת, לרבות 2 כיסויי דמה. קופסת "אופיס ניסקו" להתקנה גלויה או סמויה',unit:'נק\'',est:1},
+    {id:'83.01.005',num:'02.83.01.005',desc:'נקודת חיבור קיר 16A סיום באביזר בודד גלוי או סמוי בקיר או סיום באביזר N1 "ניסקו" מותקן בצמוד לתעלת כבלים, או שקע חד פאזי גוויס תקני משולב בתוך התעלה',unit:'נק\'',est:10},
+    {id:'83.01.006',num:'02.83.01.006',desc:'תוספת למחיר נקודת חיבור קיר רגילה 16A עבור בית תקע בודד מוגן מים',unit:'יח\'',est:2},
+    {id:'83.01.007',num:'02.83.01.007',desc:'תוספת למחיר נקודת חיבור קיר רגילה 16A עבור בית תקע כפול מוגן מים',unit:'יח\'',est:2},
+    {id:'83.01.008',num:'02.83.01.008',desc:'נקודת חיבור קיר חד פאזית 16A סיום באביזר כפול (שני שקעים צמודים 16A) סמוי בקיר או באביזר N2 "ניסקו" מותקן בצמוד לתעלת כבלים, או 2 שקעים חד פאזיים דוגמת שקעי גוויס תקניים משולבים בתוך התעלה',unit:'נק\'',est:20},
+    {id:'83.01.009',num:'02.83.01.009',desc:'נקודת חיבור קיר חד פאזית 16A סיום באביזר עם שלושה שקעים צמודים 16A סמוי בקיר או באביזר N3 "ניסקו" מותקן בצמוד לתעלת כבלים, או 3 שקעים חד פאזיים דוגמת שקעי גוויס תקניים משולבים בתוך התעלה',unit:'נק\'',est:35},
+    {id:'83.01.010',num:'02.83.01.010',desc:'נקודת מפסק הדלקה וכיבוי תאורה מרכזי, כבל 3X1.5 N2XY בצינור 20 מ"מ כבה מאליו מלוח החשמל, סיום במפסק גוויס מואר',unit:'נק\'',est:2},
+    {id:'83.01.011',num:'02.83.01.011',desc:'נקודת לחצן הפסקת חשמל חרום ללוח חשמל מעבדה, סיום בלחצן פטריה ננעל בסיבוב עם כיסוי "קלפה" עם צירים לכיסוי הלחצן, ושילוט מתאים',unit:'נק\'',est:3},
+    {id:'83.01.012',num:'02.83.01.012',desc:'נקודת חיבור קיר תלת פאזית 5X2.5 ממ"ר, סיום בשקע 5X16A CEE',unit:'נק\'',est:2},
+    {id:'83.01.013',num:'02.83.01.013',desc:'נקודת חיבור קיר חד פאזית 3X2.5 ממ"ר, סיום בשקע 3X16A CEE',unit:'נק\'',est:2},
+    {id:'83.01.014',num:'02.83.01.014',desc:'נקודת חיבור הארקה ע"י מוליך נחושת מבודד ושזור עד 10 ממ"ר וצינור כבה מאליו מתאים',unit:'יח\'',est:30},
+    {id:'83.01.015',num:'02.83.01.015',desc:'נקודת חיבור הארקה לרצפה אנטי סטטית ע"י מוליך נחושת מבודד ושזור 10 ממ"ר וצינור כבה מאליו, סיום בקופסת גוויס 4 מקום שקועה בקיר עם מכסה וברגים',unit:'יח\'',est:10},
+    {id:'83.01.016',num:'02.83.01.016',desc:'נקודת חיבור הארקה ע"י מוליך נחושת מבודד ושזור 10 ממ"ר וצינור כבה מאליו מתאים',unit:'יח\'',est:20},
+    {id:'83.01.017',num:'02.83.01.017',desc:'נקודת חיבור הארקה ע"י מוליך נחושת מבודד ושזור 16 ממ"ר וצינור כבה מאליו מתאים',unit:'נק\'',est:10},
+    {id:'83.01.018',num:'02.83.01.018',desc:'נקודת הכנה לבקרת ציוד מעבדה (סנסמוד) מקררים, צינור 20 מ"מ סמוי בקיר עם כבל תקשורת מסוכך CAT-5 מבקר סנסמוד, סיום בקופסת חיבורים שסופק ע"י סנסמוד',unit:'נק\'',est:5},
+    {id:'83.01.019',num:'02.83.01.019',desc:'נקודת הכנה לתקשורת אחודה בודדת (רק נקודה שאינה כלולה במקבץ "אופיס ניסקו") הכוללת צינור ø25 סמוי בקיר מהנקודה ועד לתעלת כבלים לתקרה. סיום בקופסת גוויס שקועה בקיר, גלויה או בתוך תעלה ייעודית',unit:'נק\'',est:15},
+    {id:'83.01.020',num:'02.83.01.020',desc:'נקודת טלפון אנלוגי כבל 4 זוג בצינור 20 מ"מ, סיום בשקע טלפון מתאים וחיבור לקופסת תקשורת במבנה',unit:'נק\'',est:1},
+    {id:'83.01.021',num:'02.83.01.021',desc:'נקודת הזנת חשמל למערכת נעילה חשמלית לדלת כניסה, בכבל 3X2.5 N2XY מושחל בצינור 20 מ"מ, סיום בקופסת חיבורים סגורה או שקע מעל הדלת',unit:'נק\'',est:2},
+    {id:'83.01.022',num:'02.83.01.022',desc:'נקודת מקרוסוויץ לדלת כניסה למעבדה כולל מקרוסוויץ דלת משולב במשקוף, צינור 20 מ"מ וכבל פיקוד 4X1 ממ"ר ללוח חשמל, לרבות תאום ההתקנה במשקוף עם ספק הציוד',unit:'נק\'',est:1},
+    {id:'83.01.023',num:'02.83.01.023',desc:'נקודת הזנה תלת פאזית 3x40A ראשית מלוח חשמל ועד ליחידת אלפסק. כבל 5X10 N2XY מושחל בצינור קוברה 50 מ"מ, סיום במפסק פקט 3x40A על הקיר ליד היחידה',unit:'נק\'',est:3},
+    {id:'83.01.024',num:'02.83.01.024',desc:'נקודת הזנה תלת פאזית ממנתק על הקיר ליד היחידה האלפסק ועד ליחידת אלפסק. כבל נחושת גמיש דגם 5x10 N2XY-K (RVK) ממ"ר מושחל בצינור קוברה 50 מ"מ, מחובר בשתי הקצוות',unit:'נק\'',est:3},
+    {id:'83.01.025',num:'02.83.01.025',desc:'נקודת פיקוד להעברה שקטה של מערכת אלפסק, כבל 3X1.5 ממ"ר בצינור 20 מ"מ וחיבור בשתי הקצות בלוח וביחידת האלפסק',unit:'נק\'',est:1},
+    {id:'83.01.026',num:'02.83.01.026',desc:'נקודה הכנה לטרמוסטט, צינור ø20 מ"מ וחוט משיכה מיחידת מ"א לתרמוסטט',unit:'יח\'',est:3},
+    {id:'83.01.027',num:'02.83.01.027',desc:'נקודת חיבור מוליך הארקה לצנרת מתכתית באמצעות שלת הארקה כבדה מגולוונת עד "3',unit:'יח\'',est:2},
+    {id:'83.01.028',num:'02.83.01.028',desc:'מערכת פיקוד מושלמת לאינטרלוק לדלתות כניסה לחדרים נקיים בתאום עם ספק הדלתות, לרבות מגענים ופיקוד בקופסת פיקוד ייעודית בחלל תקרה',unit:'קומפלט',est:2},
+    {id:'83.01.029',num:'02.83.01.029',desc:'חיבור מוליך הארקה לצנרת מתכתית באמצעות שלת הארקה כבדה מגולוונת עד "3',unit:'יח\'',est:1},
+    {id:'83.01.030',num:'02.83.01.030',desc:'גשר הארקה לשעון מים מפס שטוח מגולוון 20X2 מ"מ כולל חבקים',unit:'יח\'',est:1},
+    {id:'83.01.031',num:'02.83.01.031',desc:'נקודת הזנה חד פאזית 1X20A למנדף, בכבל 3X4 N2XY בצינור 25 מ"מ כבה מאליו',unit:'נק\'',est:2},
+    {id:'83.01.032',num:'02.83.01.032',desc:'נקודת הזנה תלת פאזית 3X16A למנדף, בכבל 5X2.5 N2XY בצינור 25 מ"מ כבה מאליו',unit:'נק\'',est:5},
+  ]},
+  {name:'גופי תאורה', num:'83.02', items:[
+    {id:'83.02.002',num:'02.83.02.002',desc:'ג"ת לד בהספד עד 40W באורך 118 ס"מ, עשוי מפוליקרבונט משוריין IP65, דרייבר איכותי תוצרת אוסרם, שטף אור חלבי 3000 לומן, גוון אור 4000K. דגם "לשם לד ישראלוקס" או סילייט געש תאורה',unit:'יח\'',est:2},
+    {id:'83.02.003',num:'02.83.02.003',desc:'ג"ת שלט יציאה חד תכליתי (כבוי במצב שגרה) מאלומניום מלוטש עם 6 נורות לד, זמן עבודה 90 דקות, עוצמת תאורה 60%, שילוט "יציאה" וסימון חץ אלקטרולייט. מאושרי מכון התקנים לת"י 20 חלק 2.22',unit:'יח\'',est:8},
+    {id:'83.02.004',num:'02.83.02.004',desc:'ג"ת חירום חד תכליתי לתאורת התמצאות, נורות לד, תפוקה 170 לומן, זמן הארה 180 דקות, ללא התראות קוליות. סוללה נטענת ניקל מטל 2200mAh 3.6V, מבדק תקינות אינטגראלי',unit:'יח\'',est:10},
+    {id:'83.02.005',num:'02.83.02.005',desc:'ג"ת לד 18W עגול מפוליאסטר לבן, מותקן גלוי על הטיח, מוגן מים IK10-IP65, שטף אור 2160 לומן, כיסוי פוליקרבונט אנטי ונדלי, דגם "גלבוע פרו"',unit:'יח\'',est:2},
+    {id:'83.02.006',num:'02.83.02.006',desc:'ג"ת פנל לד 36W במידות 60X60X5 ס"מ, שקוע בתקרה אקוסטית, תפוקת אור 4320LM, CCT=4000K, דרייבר איכותי דוגמת פיליפס, הגנה IP40, אישור פיקוד העורף',unit:'יח\'',est:6},
+    {id:'83.02.007',num:'02.83.02.007',desc:'ג"ת לד בהספק עד 40W במידות 1200X63X68 מ"מ, מפח מגולוון צבוע לבן, IP20, דרייבר איכותי תוצרת אוסרם, שטף אור 130 לומן/וואט, גוון 4000K. דגם פס אמריקאי דקורטיבי ישראלוקס',unit:'יח\'',est:3},
+    {id:'83.02.008',num:'02.83.02.008',desc:'ג"ת לד 43W במידות 60X60 ס"מ, פרופיל אלומיניום צבוע לבן, שקוע בתקרה, מתאים לחדרים נקיים ISO3 IP65 CLASS 10,000, תפוקת אור 146 לומן/וואט, גוון 4000K, דגם LUG MEDUCA 2',unit:'יח\'',est:32},
+    {id:'83.02.009',num:'02.83.02.009',desc:'ג"ת לד 43W במידות 60X60 ס"מ, פרופיל אלומיניום צבוע לבן, שקוע בתקרה, מתאים לחדרים נקיים ISO3 IP65 CLASS 1,000, תפוקת אור 146 לומן/וואט, גוון 4000K, דגם LUG MEDUCA 2',unit:'יח\'',est:6},
+  ]},
+  {name:'אינסטלציה חשמלית', num:'83.03', items:[
+    {id:'83.03.002',num:'02.83.03.002',desc:'תעלה פלסטית מחומר כבה מאליו בצבע לבן עם מכסה, במידות 120X60 מ"מ עם מחיצת הפרדה, להתקנה על הקיר. כולל סופיות מקוריות, הסתעפויות, זויות ומחזיקי כבלים פנימיים',unit:'מ"א',est:40},
+    {id:'83.03.003',num:'02.83.03.003',desc:'תעלה פלסטית IBOCO כנ"ל אך במידות 60X40 מ"מ',unit:'מ"א',est:5},
+    {id:'83.03.004',num:'02.83.03.004',desc:'מגש רשת לכבלים מגולוון גלוון קר במידות 20X8.5 ס"מ, מותקן על הקיר ו/או מתחת לתקרה, באמצעות קונזולות, מתלים וחיזוקים תעשייתיים, מרחקים כל 1.5 מטר לפחות',unit:'מ"א',est:100},
+    {id:'83.03.005',num:'02.83.03.005',desc:'מגש רשת לכבלים מגולוון גלוון קר במידות 10X8.5 ס"מ, מותקן על הקיר ו/או מתחת לתקרה בטון',unit:'מ"א',est:20},
+    {id:'83.03.006',num:'02.83.03.006',desc:'צינור "מריכף" כבה מאליו או "מרירון" 20 מ"מ שאינו כלול במחיר נקודה',unit:'מ"א',est:50},
+    {id:'83.03.007',num:'02.83.03.007',desc:'צינור "מריכף" כבה מאליו או "מרירון" 25 מ"מ שאינו כלול במחיר נקודה',unit:'מ"א',est:50},
+    {id:'83.03.008',num:'02.83.03.008',desc:'צינור "מריכף" כבה מאליו או "מרירון" בקוטר 32 מ"מ כולל חוט משיכה מנילון',unit:'מ"א',est:30},
+    {id:'83.03.009',num:'02.83.03.009',desc:'צינור שרשורי מחוזק דגם "קוברה" דו שכבתי בקוטר חיצוני 50 מ"מ כולל חבל משיכה בקוטר 8 ממ"ר',unit:'מ"א',est:40},
+    {id:'83.03.010',num:'02.83.03.010',desc:'ירידת צנרת חשמל ותקשורת סמויה בקיר לתעלת כבלים היקפית הכוללת: עד 6 צינורות 25 חשמל/תקשורת באורך כ-2 מטר מחלל תקרה, כולל סיתות בקירות וביטון. המחיר כולל הסיתות, הצנרת והביטון קומפלט לירידה אחת',unit:'קומפלט',est:10},
+    {id:'83.03.011',num:'02.83.03.011',desc:'כבל נחושת (5X2.5 N2XY(XLPE ממ"ר מושחלים בצנרת או מונחים ע"ג מגש כבלים ומחוברים בשתי הקצוות',unit:'מ"א',est:30},
+    {id:'83.03.012',num:'02.83.03.012',desc:'כבל נחושת (5X4 N2XY(XLPE ממ"ר מושחלים בצנרת או מונחים ע"ג מגש כבלים ומחוברים בשתי הקצוות',unit:'מ"א',est:50},
+    {id:'83.03.013',num:'02.83.03.013',desc:'תעלה מפח מגולוון מחורץ או מלא בעובי 1.5 ממ"ר לתליית גופי תאורה ולכבלי חשמל, צבועה לבן במידות 100X80 ממ"ר. כולל מתלה עליון מקורי לתליה מתקרה, חיזוקים, כיפופים, פינות',unit:'מ"א',est:10},
+    {id:'83.03.014',num:'02.83.03.014',desc:'כבל נחושת (4X25 N2XY(XLPE ממ"ר מושחלים בצנרת או מונחים ע"ג מגש כבלים ומחוברים בשתי הקצוות',unit:'מ"א',est:100},
+    {id:'83.03.015',num:'02.83.03.015',desc:'כבל נחושת (4X70 N2XY(XLPE ממ"ר מושחלים בצנרת או מונחים ע"ג מגש כבלים ומחוברים בשתי הקצוות',unit:'מ"א',est:30},
+    {id:'83.03.016',num:'02.83.03.016',desc:'מוליך נחושת 16 ממ"ר מבודד מונח ע"ג מגש כבלים ומחובר בשני קצותיו',unit:'מ"א',est:200},
+    {id:'83.03.017',num:'02.83.03.017',desc:'מוליך נחושת 25 ממ"ר מבודד מונח ע"ג מגש כבלים ומחובר בשני קצותיו',unit:'מ"א',est:40},
+    {id:'83.03.018',num:'02.83.03.018',desc:'מוליך נחושת 35 ממ"ר מבודד מונח ע"ג מגש כבלים ומחובר בשני קצותיו',unit:'מ"א',est:40},
+    {id:'83.03.019',num:'02.83.03.019',desc:'מוליך נחושת 50 ממ"ר מבודד מונח ע"ג מגש כבלים ומחובר בשני קצותיו',unit:'מ"א',est:120},
+    {id:'83.03.020',num:'02.83.03.020',desc:'מוליך נחושת 10 ממ"ר שזור מבודד מונח ע"ג מגש כבלים, לרבות מהדקים קנדיים להארקת כל קטע תעלת רשת ומחובר בשני קצותיו',unit:'מ"א',est:50},
+    {id:'83.03.021',num:'02.83.03.021',desc:'כבל נחושת (5X16 N2XY(XLPE ממ"ר מושחלים בצנרת או מונחים ע"ג מגש כבלים ומחוברים בשתי הקצוות',unit:'מ"א',est:25},
+    {id:'83.03.022',num:'02.83.03.022',desc:'כבל נחושת (5X10 N2XY(XLPE ממ"ר מושחלים בצנרת או מונחים ע"ג מגש כבלים ומחוברים בשתי הקצוות',unit:'מ"א',est:30},
+    {id:'83.03.023',num:'02.83.03.023',desc:'כבל אלומיניום מסוג (XLPE) NA2XY בחתך 4X120 ממ"ר קבועים למבנה, מונחים על סולמות או בתעלות או מושחלים בצינורות, לרבות חיבור בשני הקצוות',unit:'מ"א',est:50},
+    {id:'83.03.024',num:'02.83.03.024',desc:'פס הארקה מותקן על הקיר ע"ג מבודדים, עשוי מנחושת 40X4 מ"מ, לרבות כל ברגי החיבור, אומים, דיסקיות פליז, שילוט וחומרי עזר. באורך 30 ס"מ לפחות',unit:'קומפלט',est:5},
+    {id:'83.03.025',num:'02.83.03.025',desc:'איטום פתחים לכבלי חשמל ותקשורת למעבר אש ועשן במשך שעתיים, חומר איטום אלסטומרי מאושר. המחיר לפי שטח כולל מצטבר',unit:'מ"ר',est:0.5},
+    {id:'83.03.026',num:'02.83.03.026',desc:'תוספת בגין התקנת פס הארקה בקופסת CI מתאימה מוגנת מים בגג',unit:'יח\'',est:1},
+    {id:'83.03.027',num:'02.83.03.027',desc:'מתקן חשמל זמני לשיפוץ מעבדה הכולל לוח חשמל זמני בקופסת CI מודולרית: מפסק ראשי 3X25A, ממסר פחת, מאמ"תים חד ותלת פאזיים, שני שקעים ישראליים 16A, שקע תלת פאזי CEE. כולל ביצוע נקודות מאור וכח זמניות, בדיקת המתקן ע"י בודק חשמל מוסמך ודו"ח בדיקה בכתב',unit:'קומפלט',est:1},
+    {id:'83.03.028',num:'02.83.03.028',desc:'סולם כבלים ברוחב 60 ס"מ בגובה 10 ס"מ מגולוון, מותקן ע"ג קונזולות לקיר או לתקרה',unit:'מ"א',est:5},
+    {id:'83.03.029',num:'02.83.03.029',desc:'צופר אתראה קולי עם נצנץ אדום מהבהב, כולל סוללת גיבוי נטענת ל-48 שעות, מוזן ממעגל רגיל',unit:'יח\'',est:1},
+  ]},
+  {name:'לוחות חשמל מעבדה', num:'83.04', items:[
+    {id:'83.04.002',num:'02.83.04.002',desc:'מפסק זרם חצי אוטומטי (ברקר) עד 3X100A עם הגנות טרמיות ומגנטיות, כושר ניתוק 25KA, דוגמת NSX100B שניידר. מגע עזר לחיווי מצב מפסק לבקרה',unit:'יח\'',est:3},
+    {id:'83.04.003',num:'02.83.04.003',desc:'סליל הפסקה למפסק זרם ח"א עד 3X100A',unit:'יח\'',est:4},
+    {id:'83.04.004',num:'02.83.04.004',desc:'סליל הפסקה למאמ"ת עד 3X63A',unit:'יח\'',est:2},
+    {id:'83.04.005',num:'02.83.04.005',desc:'מאמ"ת תלת פאזי 3X32A עד 10KA 3X40A תקן IEC898',unit:'יח\'',est:8},
+    {id:'83.04.006',num:'02.83.04.006',desc:'מאמ"ת תלת פאזי 3X16A עד 10KA 3X25A תקן IEC898',unit:'יח\'',est:15},
+    {id:'83.04.007',num:'02.83.04.007',desc:'מאמ"ת תלת פאזי 15KA 3X6A תקן IEC898',unit:'יח\'',est:5},
+    {id:'83.04.008',num:'02.83.04.008',desc:'מאמ"ת חד פאזי עד 10KA 1X32A תקן IEC898',unit:'יח\'',est:70},
+    {id:'83.04.009',num:'02.83.04.009',desc:'שנאי פיקוד עד 100 וולט-אמפר 24V להתקנה על פס דין כולל מארז מאוורר',unit:'יח\'',est:1},
+    {id:'83.04.010',num:'02.83.04.010',desc:'מאמ"ת חד פאזי עד 10KA 20A+N תקן IEC898',unit:'יח\'',est:1},
+    {id:'83.04.011',num:'02.83.04.011',desc:'מאמ"ת דו פאזי עד 10KA 2X16A תקן IEC898',unit:'יח\'',est:1},
+    {id:'83.04.012',num:'02.83.04.012',desc:'ממסר פחת עד 30 מ"א 4X40A דגם A',unit:'יח\'',est:15},
+    {id:'83.04.013',num:'02.83.04.013',desc:'ממסר פחת עד 30 מ"א 2X40A דגם A',unit:'יח\'',est:4},
+    {id:'83.04.014',num:'02.83.04.014',desc:'ממסר צעד 24V/220V 2X16A דוגמת שניידר אלקטריק',unit:'יח\'',est:2},
+    {id:'83.04.015',num:'02.83.04.015',desc:'מפסק בורר 10A פיקוד שלושה מצבים 1-0-2',unit:'יח\'',est:6},
+    {id:'83.04.016',num:'02.83.04.016',desc:'מגען AC3 4X40A עם מגע עזר לחיווי מצב מגען, תוצרת טלמכניק',unit:'יח\'',est:1},
+    {id:'83.04.017',num:'02.83.04.017',desc:'מגען AC3 3X20A עם מגע עזר לחיווי מצב מגען, תוצרת טלמכניק',unit:'יח\'',est:1},
+    {id:'83.04.018',num:'02.83.04.018',desc:'מגען AC3 3X16A עם מגע עזר לחיווי מצב מגען, תוצרת טלמכניק',unit:'יח\'',est:1},
+    {id:'83.04.019',num:'02.83.04.019',desc:'מפסק פיקוד קפיצי 10A עם נעילה במפתח במצב פתוח, לפיקוד מערכת העברה שקטה (חמה) למערכת אלפסק',unit:'יח\'',est:1},
+    {id:'83.04.020',num:'02.83.04.020',desc:'מפסק בעומס עד 4X40A בורר 3 מצבים 1-0-2 כולל מגע עזר לחיווי מצב מפסק',unit:'יח\'',est:1},
+    {id:'83.04.021',num:'02.83.04.021',desc:'מפסק בעומס עד 4X80A בורר 3 מצבים 1-0-2 כולל מגע עזר לחיווי מצב מפסק',unit:'יח\'',est:1},
+    {id:'83.04.022',num:'02.83.04.022',desc:'מפסק בעומס עד 4X100A בורר 3 מצבים 1-0-2 כולל מגע עזר לחיווי מצב מפסק',unit:'יח\'',est:1},
+    {id:'83.04.023',num:'02.83.04.023',desc:'מנורת סימון LED לסימון פאזות או לחיווי אתראות עם כיסוי צבעוני 220V כולל בסיס מתאים',unit:'יח\'',est:20},
+    {id:'83.04.024',num:'02.83.04.024',desc:'שעון דיגיטלי לפיקוד עם תכנית יומית שבועית, סוללת גיבוי THEBEN דגם TR611 וכיתוב עברית',unit:'יח\'',est:2},
+    {id:'83.04.025',num:'02.83.04.025',desc:'יחידת פיקוד מסוג ISO (מצג בקרה) לניתוק מפסק ראשי ו/או מ"א בזמן אש עם 2 מגעים יבשים לפיקוד',unit:'יח\'',est:2},
+    {id:'83.04.026',num:'02.83.04.026',desc:'יחידת פיקוד מסוג ISO (מצג בקרה) לניתוק מפסק ראשי ו/או מ"א בזמן אש עם 4 מגעים יבשים לפיקוד',unit:'יח\'',est:1},
+    {id:'83.04.027',num:'02.83.04.027',desc:'ממסרים לחוסר מתח פעולה ב-24VDC, דגם DSK2, תוצרת SYRELEC. חיבור מגע יבש למהדקי פיקוד לאתראה לבקרה',unit:'יח\'',est:1},
+    {id:'83.04.028',num:'02.83.04.028',desc:'לחצן הפסקת חשמל חרום מותקן בחזית לוח חשמל מעבדה, לחצן פטריה ננעל בסיבוב עם כיסוי "קלפה", לרבות חיווט מושלם ושילוט מתאים',unit:'יח\'',est:2},
+    {id:'83.04.029',num:'02.83.04.029',desc:'מבנה לוח חשמל ראשי מס\' 14 מעבדות מפלס 0 אגף צפון, מחולק ל-3 שדות: בלתי חיוני, גנרטור ושדה UPS. מפח קדופריט מגולוון צבוע בתנור. כולל פסי צבירה עד 4x100A, מהדקים, פסי אפס והארקה, חיווט, שילוט. מחיר לפי שטח חזית נטו במ"ר',unit:'מ"ר',est:4.5},
+    {id:'83.04.030',num:'02.83.04.030',desc:'מבנה לוח חשמל מס\' 21 מעבדת ד"ר נטע שלו קומה 2 אגף דרום, בלתי חיוני, עם פאנלים פנימיים ודלתות. מפח קדופריט מגולוון צבוע בתנור. כולל פסי צבירה עד 4x100A, מהדקים, פסי אפס והארקה, חיווט, שילוט. מחיר לפי שטח חזית נטו במ"ר',unit:'מ"ר',est:2.5},
+  ]},
+  {name:'מערכת גילוי אש וכריזת חירום', num:'83.05', items:[
+    {id:'83.05.002',num:'02.83.05.002',desc:'גלאי אש פוטו אלקטרי ממוען אנלוגי למערכת גילוי אש "טלפייר"',unit:'יח\'',est:16},
+    {id:'83.05.003',num:'02.83.05.003',desc:'גלאי עשן לתעלת מיזוג אוויר לרכזת ממוענת טלפייר, כולל התקנה מושלמת בתעלה',unit:'יח\'',est:3},
+    {id:'83.05.004',num:'02.83.05.004',desc:'צופר אזעקת אש להתקנה פנימית, אור קולי עם נצנץ',unit:'יח\'',est:2},
+    {id:'83.05.005',num:'02.83.05.005',desc:'לחצן אזעקת אש',unit:'יח\'',est:2},
+    {id:'83.05.006',num:'02.83.05.006',desc:'מנורת סימון לגלאי אש',unit:'יח\'',est:6},
+    {id:'83.05.007',num:'02.83.05.007',desc:'כרטיס כתובתי עם מגעים יבשים דגם 723-ADR הכולל 2 מוצאים כתובתיים ומעגל מבוא בודד להפסקת מ"א או בקרת דלתות במעבדה במצב אש',unit:'יח\'',est:2},
+    {id:'83.05.008',num:'02.83.05.008',desc:'נקודת גילוי אש הכוללת: כבל תקני 4X0.8 מושחל בצינור/מוביל קיים, מרכזת ג"א עד יחידת הקצה (גלאי, מנורת סימון, לחצן, צופר, יחידת כתובת) או בין שתי יחידות קצה סמוכות',unit:'נק\'',est:25},
+    {id:'83.05.009',num:'02.83.05.009',desc:'תכנות וחיבור כל האלמנטים למרכזית גילוי אש בבניין, לרבות תכנות המערכת, חיבור המעבדה לרכזת ג"א קיימת ובדיקת תקינות בסיום העבודה',unit:'קומפלט',est:1},
+    {id:'83.05.010',num:'02.83.05.010',desc:'רמקול כריזה 6" או רמקול קירי חצי ירח עם כיסוי מפח מחורר, חיבור לקו כריזה קיים',unit:'יח\'',est:4},
+    {id:'83.05.011',num:'02.83.05.011',desc:'נקודת לכריזת חרום מתאימה למערכת קיימת, כולל כבל 2X0.8 ממ"ר חסין אש עד לרמקול, חיבור וחיווט לרמקול וחיבור למערכת כריזה קיימת בבניין',unit:'נק\'',est:3},
+  ]},
+  {name:'העתקת מערכת UPS קיימת 50 kVA', num:'83.06', items:[
+    {id:'83.06.001',num:'02.83.06.001',desc:'סיבוב יחידת אלפסק קיימת בהספק 3/3-50KVA ע"פ המסומן בתכנית (המחיר כולל קווי הזנה ראשיים מלוח חשמל ליחידה במידה ויידרש)',unit:'קומפלט',est:1},
+  ]},
+  {name:'מערכת אלפסק חדשה 20 kVA', num:'83.08', items:[
+    {id:'83.08.001',num:'02.83.08.001',desc:'העמדה, התקנה מכנית וחשמלית של מערכת אלפסק חדשה 3/3-20KVA עד להפעלה מושלמת (המחיר אינו כולל קווי הזנה ראשיים)',unit:'קומפלט',est:1},
+    {id:'83.08.002',num:'02.83.08.002',desc:'אספקה בלבד של מערכת אלפסק בהספק 3/3-20KVA, דגם 93E-30kVA. כוללת כל מערכות העזר, מצברים למשך 15 דקות ב-100% עומס, 3 ענפים לקבלת יתירות, 96 מצברים PHR-1236. כולל כרטיס EATON Relay MS וכרטיס תקשורת MODBUS+SNMP',unit:'קומפלט',est:1},
+    {id:'83.08.003',num:'02.83.08.003',desc:'שנאי מבדל מאושר מכון התקנים, מותקן במארז מאוורר ומוארק, בהספק 20 קו"א Y/Y 400/400V, לרבות מנתק זרם 3X40A מותקן על גבי הגבהה קבועה ברצפה',unit:'קומפלט',est:1},
+  ]},
+  {name:'מערכת נעילת דלתות חשמלית', num:'83.09', items:[
+    {id:'83.09.001',num:'02.83.09.001',desc:'מערכת פיקוד ושליטה מושלמת לדלת כניסה למעבדה הכוללת: קודן חיצוני, ספק כח, כבלי חשמל ופיקוד, מגע יבש לפתיחת הדלת במצב אתראת אש. מערכת מסוג PK-12 תוצרת Wintec. לרבות הכנה לכרטיסי קרבה מגנטיים, אספקה ותכנות. כולל מנעול חשמלי 12VDC (N.C) דוגמת YALE',unit:'קומפלט',est:2},
+    {id:'83.09.002',num:'02.83.09.002',desc:'תוספת לסעיף הנ"ל עבור מנעול חשמלי לדלת מעבדה מבוקרת מתח 12VDC עם פיקוד הפוך (N.O) הנפתח במצב חוסר מתח חשמלי, דוגמת מנעול Abloy/Dorcas',unit:'קומפלט',est:1},
+  ]},
+];
+
+// Sheet 3 sections (פרק 082 - שדרוג מערכת חשמל מכון למדעי כדור הארץ)
+const SECTIONS_S3 = [
+  {name:'תשתיות בפיתוח: צנרת, כבילה ובדיקות', num:'82.01', items:[
+    {id:'82.01.001',num:'02.82.01.001',desc:'כבל נחושת מסוג N2XY בחתך 5x16 ממ"ר מושחל בצינור ומחובר בשתי הקצוות',unit:'מ"א',est:50},
+    {id:'82.01.002',num:'02.82.01.002',desc:'כבל נחושת מסוג N2XY בחתך 5x10 ממ"ר מושחל בצינור או מונח בתעלת כבלים ומחובר בשתי הקצוות',unit:'מ"א',est:50},
+    {id:'82.01.003',num:'02.82.01.003',desc:'כבל נחושת מסוג N2XY בחתך 5x4 ממ"ר מושחל בצינור או מונח בתעלת כבלים ומחובר בשתי הקצוות',unit:'מ"א',est:20},
+    {id:'82.01.004',num:'02.82.01.004',desc:'כבל 5X2.5 N2XY ממ"ר מושחל בצינור לרבות חיבור מושלם בשתי הקצוות',unit:'מ"א',est:50},
+    {id:'82.01.005',num:'02.82.01.005',desc:'כבל 3X2.5 N2XY ממ"ר מושחל בצינור לרבות חיבור מושלם בשתי הקצוות',unit:'מ"א',est:60},
+    {id:'82.01.006',num:'02.82.01.006',desc:'מופה לכבל מתכווצת לכבל עד 4X240 ממ"ר מוגנת מים',unit:'יח\'',est:4},
+    {id:'82.01.007',num:'02.82.01.007',desc:'תוספת לשות או פס"צ לשלושה כבלים 3X185 ממ"ר לחיבור למפסק 3X630A קיים בלוח בלתי חיוני מדעי המוח',unit:'קומפלט',est:1},
+    {id:'82.01.008',num:'02.82.01.008',desc:'כבלי אלומיניום מסוג NA2XY (XLPE) בחתך 3X185+95 ממ"ר קבועים למבנה, מונחים על סולמות או בתעלות או מושחלים בצינורות לרבות חיבור בשני הקצוות',unit:'מ"א',est:200},
+    {id:'82.01.009',num:'02.82.01.009',desc:'כבלי אלומיניום מסוג NA2XY (XLPE) בחתך 4X150 ממ"ר קבועים למבנה, מונחים על סולמות או בתעלות לרבות חיבור בשני הקצוות',unit:'מ"א',est:80},
+    {id:'82.01.010',num:'02.82.01.010',desc:'כבלי אלומיניום מסוג NA2XY (XLPE) בחתך 4X240 ממ"ר קבועים למבנה, מונחים על סולמות או בתעלות לרבות חיבור בשני הקצוות',unit:'מ"א',est:200},
+    {id:'82.01.011',num:'02.82.01.011',desc:'כבלי אלומיניום מסוג NA2XY (XLPE) בחתך 4X50 ממ"ר קבועים למבנה, מונחים על סולמות או בתעלות לרבות חיבור בשני הקצוות',unit:'מ"א',est:50},
+    {id:'82.01.012',num:'02.82.01.012',desc:'קידוח מעבר בקיר בטון מזוין בעובי עד 40 ס"מ, עבור צינור בקוטר "4 לרבות הצינור',unit:'יח\'',est:6},
+    {id:'82.01.013',num:'02.82.01.013',desc:'סולמות לכבלים ברוחב 300 מ"מ ובגובה 60 מ"מ מברזל מגולוון, קבועים על מבנים או תלויים מהתקרה, לרבות חיזוקי ברזל, זוויות, מחברים, קשתות, תמיכות, מהדקי הארקה ומתלים',unit:'יח\'',est:25},
+    {id:'82.01.014',num:'02.82.01.014',desc:'תעלות ברוחב 400 מ"מ ובעומק 200 מ"מ, מפח מגולוון (עובי הפח 1 מ"מ), קבועות על מבנה או תלויות מהתקרה, לרבות מכסה, חיזוקי ברזל, קשתות, זוויות, הסתעפויות, תמיכות, מתלים, מחברים ומהדקי הארקה',unit:'מ"א',est:30},
+    {id:'82.01.015',num:'02.82.01.015',desc:'מוליכי נחושת מבודדים בחתך 25 ממ"ר עם בידוד P.V.C מושחלים בצינורות או מונחים בתעלות, לרבות חיבור בשני הקצוות',unit:'מ"א',est:80},
+    {id:'82.01.016',num:'02.82.01.016',desc:'מוליכי נחושת מבודדים בחתך 70 ממ"ר עם בידוד P.V.C מושחלים בצינורות או מונחים בתעלות, לרבות חיבור בשני הקצוות, כדוגמת "ארכה"',unit:'מ"א',est:80},
+    {id:'82.01.017',num:'02.82.01.017',desc:'פס הארקה מותקן על הקיר ע"ג מבודדים עשוי מנחושת 40X4 מ"מ, לרבות כל ברגי החיבור, אומים, דיסקיות פליז, שילוט וכל חומרי העזר. באורך 30 ס"מ לפחות',unit:'קומפלט',est:1},
+    {id:'82.01.018',num:'02.82.01.018',desc:'תוספת בגין התקנת פס הארקה בקופסת CI מתאימה מוגנת מים בגג',unit:'יח\'',est:1},
+  ]},
+  {name:'עבודות בלוחות חשמל קיימים', num:'82.02', items:[
+    {id:'82.02.001',num:'02.82.02.001',desc:'גישור מפסקים ראשים בלוח חשמל ראשי חיוני קיים ללוח ראשי שדה בלתי חיוני בנין מדעי כדור הארץ בכבל גמיש 4X50 ממ"ר לפחות, עבודה מתואמת בשעות לא שגרתיות',unit:'קומפלט',est:1},
+    {id:'82.02.002',num:'02.82.02.002',desc:'חיבור שלושה כבלים חדשים NA2XY 3X185+95 אלומיניום למפסק ראשי שדה רגיל 3X630 בלוח ראשי כדוה"א קיים ע"י לשות או פס"צ חדשים, עבודה מתואמת בשעות לא שגרתיות',unit:'קומפלט',est:1},
+    {id:'82.02.003',num:'02.82.02.003',desc:'תוספת מפסק זרם ח"א 3X250 אמפר אלקטרוני בלוח ראשי כדוה"א שדה רגיל עבור לוח מ"א בגג, עבודה מתואמת בשעות לא שגרתיות',unit:'קומפלט',est:1},
+    {id:'82.02.004',num:'02.82.02.004',desc:'תוספת מפסק זרם ח"א 3X100 אמפר אלקטרוני בלוח ראשי כדה"א שדה רגיל עבור לוח 14 מעבדת נטע שלו, עבודה מתואמת בשעות לא שגרתיות',unit:'קומפלט',est:2},
+    {id:'82.02.005',num:'02.82.02.005',desc:'תוספת מפסק זרם ח"א 3X400 אמפר אלקטרוני מתוצרת איטון בלוח ראשי מדעי המוח שדה חיוני עבור לוח חיוני כדור הארץ, עבודה מתואמת בשעות לא שגרתיות',unit:'קומפלט',est:1},
+  ]},
+  {name:'לוח חשמל חיוני ראשי כדוה"א', num:'82.03', items:[
+    {id:'82.03.001',num:'02.82.03.001',desc:'מפסק זרם חצי אוטמטי עד 4X400A עם הגנות אלקטרוניות כושר ניתוק 36KA, שניידר אלקטריק או ABB',unit:'יח\'',est:2},
+    {id:'82.03.002',num:'02.82.03.002',desc:'מערכת חיגור מכני למפסקים ח"א 4X400A',unit:'קומפלט',est:1},
+    {id:'82.03.003',num:'02.82.03.003',desc:'מערכת חיגור חשמלי מושלמת למפסקים ח"א 4X400A כולל פיקוד ומגע מקדים ע"פ פרט בתכנית',unit:'קומפלט',est:1},
+    {id:'82.03.004',num:'02.82.03.004',desc:'מפסק זרם חצי אוטמטי עד 3X200A עם הגנות טרמיות ומגנטיות כושר ניתוק 36KA, דגם NSX250B שניידר אלקטריק או ABB XT1C-TMD',unit:'יח\'',est:1},
+    {id:'82.03.005',num:'02.82.03.005',desc:'מפסק זרם חצי אוטמטי עד 3X100A עם הגנות טרמיות ומגנטיות כושר ניתוק 25KA, דגם NSX150B שניידר אלקטריק או ABB XT1C-TMD',unit:'יח\'',est:12},
+    {id:'82.03.006',num:'02.82.03.006',desc:'תוספת סליל הפסקה למפסק זרם ח"א מכל סוג עד 3X400A',unit:'יח\'',est:10},
+    {id:'82.03.007',num:'02.82.03.007',desc:'מאמ"ת חד פאזי עד 15KA 32A תקן IEC947',unit:'יח\'',est:2},
+    {id:'82.03.008',num:'02.82.03.008',desc:'מפסק חצי אוטומטי 3X6A כושר ניתוק 25kA',unit:'יח\'',est:3},
+    {id:'82.03.009',num:'02.82.03.009',desc:'מפסק פחת 30 מ"א 4X40A דגם A',unit:'יח\'',est:1},
+    {id:'82.03.010',num:'02.82.03.010',desc:'מכשיר מדידה אלקטרוני (לזרם ומתח ופונקציות נוספות) מותקן בלוח חשמל, דגם PM135E, תוצרת שניידר אלקטריק, כולל משני זרם עד 3X400/5A',unit:'יח\'',est:1},
+    {id:'82.03.011',num:'02.82.03.011',desc:'יחידת פיקוד ISO (מצג בקרה) לניתוק בזמן אש עם 12 יציאות וחיווט מושלם',unit:'יח\'',est:1},
+    {id:'82.03.012',num:'02.82.03.012',desc:'הגנת מתחי יתר כולל מנתק נתיכים 3X63A ויחידת הגנה PHEONIX 4P-15KA',unit:'יח\'',est:1},
+    {id:'82.03.013',num:'02.82.03.013',desc:'מבנה לוח חשמל ראשי חיוני בנוי תקן ישראלי 61439, מפח דקופריט מגולוון צבוע בתנור, עם דלתות. פס"צ עד 4X400 אמפר, שדה רגיל 4X100 אמפר. ICW=25KA/1s. IP30, IK10, דרגת מידור 2B. מחיר לפי שטח חזית מצטבר במ"ר',unit:'מ"ר',est:3},
+  ]},
+  {name:'לוח חלוקה למיזוג אוויר בגג אגף דרום', num:'82.04', items:[
+    {id:'82.04.001',num:'02.82.04.001',desc:'מפסק זרם חצי אוטמטי עד 4X100A עם הגנות אלקטרוניות כושר ניתוק 25KA, שניידר אלקטריק או ABB',unit:'יח\'',est:2},
+    {id:'82.04.002',num:'02.82.04.002',desc:'מערכת חיגור מכני למפסקים ח"א 4X100A',unit:'קומפלט',est:1},
+    {id:'82.04.003',num:'02.82.04.003',desc:'מערכת חיגור חשמלי מושלמת למפסקים ח"א 4X100A כולל פיקוד ומגע מקדים ע"פ פרט בתכנית',unit:'קומפלט',est:1},
+    {id:'82.04.004',num:'02.82.04.004',desc:'מפסק זרם חצי אוטמטי עד 3X250A עם הגנות טרמיות ומגנטיות כושר ניתוק 36KA, דגם NSX250B שניידר אלקטריק או ABB XT1C-TMD',unit:'יח\'',est:1},
+    {id:'82.04.005',num:'02.82.04.005',desc:'מפסק זרם חצי אוטמטי עד 3X100A עם הגנות טרמיות ומגנטיות כושר ניתוק 25KA, דגם NSX150B שניידר אלקטריק או ABB XT1C-TMD',unit:'יח\'',est:7},
+    {id:'82.04.006',num:'02.82.04.006',desc:'תוספת סליל הפסקה למפסק זרם ח"א מכל סוג עד 3X250A',unit:'יח\'',est:2},
+    {id:'82.04.007',num:'02.82.04.007',desc:'מאמ"ת חד פאזי עד 10KA 32A תקן IEC947',unit:'יח\'',est:2},
+    {id:'82.04.008',num:'02.82.04.008',desc:'מפסק חצי אוטומטי 3X6A כושר ניתוק 25kA',unit:'יח\'',est:2},
+    {id:'82.04.009',num:'02.82.04.009',desc:'מנורת סימון לד לפאזות או מנורת אזהרה',unit:'יח\'',est:8},
+    {id:'82.04.010',num:'02.82.04.010',desc:'הגנת מתחי יתר כולל מנתק נתיכים 3X63A ויחידת הגנה PHEONIX 4P-15KA',unit:'יח\'',est:1},
+    {id:'82.04.011',num:'02.82.04.011',desc:'מאמ"ת תלת פאזי עד 10kA 3X40A תקן IEC947',unit:'יח\'',est:4},
+    {id:'82.04.012',num:'02.82.04.012',desc:'מכשיר מדידה אלקטרוני דגם PM135E, תוצרת שניידר אלקטריק, כולל משני זרם עד 3X250/5A',unit:'יח\'',est:1},
+    {id:'82.04.013',num:'02.82.04.013',desc:'יחידת פיקוד ISO (מצג בקרה) לניתוק בזמן אש עם 4 יציאות וחיווט מושלם',unit:'יח\'',est:1},
+    {id:'82.04.014',num:'02.82.04.014',desc:'מבנה לוח חשמל חלוקה למ"א בגג, תקן ישראלי 61439, מפח דקופריט מגולוון צבוע בתנור. פס"צ עד 4X250 אמפר, שדה רגיל 4X100 אמפר, שדה חיוני. ICW=25KA/1s. IP67, IK10, דרגת מידור 2B. מחיר לפי שטח חזית מצטבר במ"ר',unit:'מ"ר',est:4},
+  ]},
+  {name:'תאורה בגג', num:'82.05', items:[
+    {id:'82.05.001',num:'02.82.05.001',desc:'נקודת מאור מוגנת מים בגג',unit:'נק\'',est:20},
+    {id:'82.05.002',num:'02.82.05.002',desc:'ג"ת מוגן מים לד בהספק 40W, IK08, IP65, דגם לשם לד ישראלוקס. בסיס גוף מפוליקרבונט משוריין עם אטם סיליקון, רפלקטור מפח מגולוון צבוע אפוקסי לבן',unit:'יח\'',est:20},
+  ]},
+];
+
+// ========== STATE ==========
+let state = {project:'',month:'',phone:'',currentRoom:null,data:{}};
+// data[roomId][itemId] = {qty:0, notes:''}
+
+function getSections(room){
+  if(room.sheet===1) return SECTIONS_S1;
+  if(room.sheet===3) return SECTIONS_S3;
+  return SECTIONS_S2;
+}
+
+// ========== NAVIGATION ==========
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+}
+
+function startApp(){
+  try{
+    const proj=document.getElementById('inp-project').value.trim()||'פרויקט';
+    const dateVal=document.getElementById('inp-month').value;
+    let dateStr;
+    if(dateVal){
+      const d=new Date(dateVal);
+      dateStr=isNaN(d)?dateVal:d.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'});
+    } else {
+      dateStr=new Date().toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'});
+    }
+    state.project=proj;
+    state.month=dateStr;
+    state.phone=document.getElementById('inp-phone').value.trim();
+    state.foreman=document.getElementById('inp-foreman').value.trim();
+    document.getElementById('header-info').style.display='block';
+    document.getElementById('hi-project').textContent=proj;
+    document.getElementById('hi-foreman').textContent=state.foreman?('👷 '+state.foreman):'';
+    document.getElementById('hi-month').textContent=dateStr;
+    saveToStorage();
+    showRooms();
+  }catch(e){showRooms();}
+}
+
+function showRooms(){
+  buildRoomCards();
+  showScreen('rooms');
+}
+
+function buildRoomCards(){
+  const c=document.getElementById('room-cards');
+  c.innerHTML='';
+  ROOMS.forEach(r=>{
+    const done=countDoneItems(r);
+    const total=countTotalItems(r);
+    const pct=total?Math.round(done/total*100):0;
+    const d=document.createElement('div');
+    d.className='room-card';
+    d.innerHTML=`
+      <div class="room-icon">${r.icon}</div>
+      <div class="room-name">${r.name}</div>
+      <div class="room-floor">${r.floor}${r.type?' – '+r.type:''}</div>
+      <div class="room-count">${done}/${total} סעיפים</div>
+      ${pct===100?'<div class="room-done">✓ הושלם</div>':'<div style="margin-top:6px;background:#eef1f4;border-radius:20px;height:4px"><div class="progress-bar" style="width:'+pct+'%"></div></div>'}
+      <div class="room-actions">
+        <button class="btn-room-count" onclick="openRoom('${r.id}')">📋 ספירה</button>
+        <button class="btn-room-extra" onclick="openExtras('${r.id}','${r.name}')">➕ תוספות</button>
+      </div>
+
+    `;
+    c.appendChild(d);
+  });
+}
+
+function openExtras(roomId, roomName){
+  document.getElementById('ex-proj').value = state.project||'';
+  document.getElementById('ex-room').value = roomName||'';
+  document.getElementById('ex-worker').value = '';
+  document.getElementById('ex-desc').value = '';
+  document.getElementById('ex-who').value = '';
+  exSelectedRole = '';
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('on'));
+  exResetPlan();
+  exResetPhoto();
+  exResetSig();
+  showScreen('extras');
+}
+
+// ---- EXTRAS FORM JS ----
+let exSelectedRole='', exPlanImg=null, exStrokes=[], exCur=null, exPhotoImg=null, exSigDrawn=false, exSP=null;
+
+function setRole(r){
+  exSelectedRole=r;
+  document.getElementById('role-mgr').classList.toggle('on',r==='מנהל עבודה');
+  document.getElementById('role-sub').classList.toggle('on',r==='קבלן משנה');
+  document.getElementById('role-elec').classList.toggle('on',r==='חשמלאי');
+}
+
+function exResetPlan(){
+  exPlanImg=null; exStrokes=[]; exCur=null;
+  document.getElementById('exPlanWrap').style.display='none';
+  const ul=document.getElementById('exUpPlan');
+  ul.classList.remove('has');
+  ul.childNodes[0].textContent='📐 צלם או בחר את התוכנית';
+  document.getElementById('exPlanFile').value='';
+}
+function exResetPhoto(){
+  exPhotoImg=null;
+  document.getElementById('exPhotoPrev').style.display='none';
+  document.getElementById('exPhotoPrev').src='';
+  const ul=document.getElementById('exUpPhoto');
+  ul.classList.remove('has');
+  ul.childNodes[0].textContent='📷 צלם או בחר תמונה';
+  document.getElementById('exPhotoFile').value='';
+}
+function exResetSig(){
+  exSigDrawn=false; exSP=null;
+  const sc=document.getElementById('exSigCanvas');
+  const ctx=sc.getContext('2d');
+  ctx.clearRect(0,0,sc.width,sc.height);
+}
+
+// plan canvas
+document.addEventListener('DOMContentLoaded',()=>{
+  // set today as default date
+  const today=new Date();
+  const yyyy=today.getFullYear();
+  const mm=String(today.getMonth()+1).padStart(2,'0');
+  const dd=String(today.getDate()).padStart(2,'0');
+  document.getElementById('inp-month').value=`${yyyy}-${mm}-${dd}`;
+
+  const planC=document.getElementById('exPlanCanvas');
+  const pctx=planC.getContext('2d');
+  function exRedraw(){
+    if(!exPlanImg)return;
+    pctx.drawImage(exPlanImg,0,0,planC.width,planC.height);
+    pctx.lineCap='round';pctx.lineJoin='round';
+    exStrokes.concat(exCur?[exCur]:[]).forEach(s=>{
+      pctx.strokeStyle='#D7263D';pctx.lineWidth=Math.max(3,planC.width/220);
+      pctx.beginPath();s.forEach((p,i)=>i?pctx.lineTo(p[0],p[1]):pctx.moveTo(p[0],p[1]));pctx.stroke();
+    });
+  }
+  function exPos(ev,c){const r=c.getBoundingClientRect();const t=ev.touches?ev.touches[0]:ev;return[(t.clientX-r.left)*c.width/r.width,(t.clientY-r.top)*c.height/r.height]}
+  ['pointerdown','touchstart'].forEach(e=>planC.addEventListener(e,ev=>{if(!exPlanImg)return;ev.preventDefault();exCur=[exPos(ev,planC)];exRedraw()},{passive:false}));
+  ['pointermove','touchmove'].forEach(e=>planC.addEventListener(e,ev=>{if(!exCur)return;ev.preventDefault();exCur.push(exPos(ev,planC));exRedraw()},{passive:false}));
+  ['pointerup','touchend','pointerleave'].forEach(e=>planC.addEventListener(e,()=>{if(exCur){exStrokes.push(exCur);exCur=null;exRedraw()}}));
+  document.getElementById('exTUndo').onclick=()=>{exStrokes.pop();exRedraw()};
+  document.getElementById('exTClear').onclick=()=>{exStrokes=[];exRedraw()};
+
+  document.getElementById('exPlanFile').onchange=e=>{
+    const f=e.target.files[0];if(!f)return;
+    const img=new Image();
+    img.onload=()=>{
+      exPlanImg=img;
+      const maxW=1400,sc=Math.min(1,maxW/img.width);
+      planC.width=img.width*sc;planC.height=img.height*sc;
+      exStrokes=[];exRedraw();
+      document.getElementById('exPlanWrap').style.display='block';
+      document.getElementById('exUpPlan').classList.add('has');
+      document.getElementById('exUpPlan').childNodes[0].textContent='✔ תוכנית נטענה — אפשר להחליף';
+    };
+    img.src=URL.createObjectURL(f);
+  };
+
+  document.getElementById('exPhotoFile').onchange=e=>{
+    const f=e.target.files[0];if(!f)return;
+    const img=new Image();
+    img.onload=()=>{
+      exPhotoImg=img;
+      const p=document.getElementById('exPhotoPrev');p.src=img.src;p.style.display='block';
+      document.getElementById('exUpPhoto').classList.add('has');
+      document.getElementById('exUpPhoto').childNodes[0].textContent='✔ תמונה נטענה — אפשר להחליף';
+    };
+    img.src=URL.createObjectURL(f);
+  };
+
+  // signature
+  const sigC=document.getElementById('exSigCanvas');
+  const sctx=sigC.getContext('2d');
+  function sizeSig(){const r=sigC.getBoundingClientRect();sigC.width=(r.width||300)*2;sigC.height=260;sctx.lineWidth=3;sctx.lineCap='round';sctx.strokeStyle='#1A1D21'}
+  sizeSig();
+  function exSigPos(ev){const r=sigC.getBoundingClientRect();const t=ev.touches?ev.touches[0]:ev;return[(t.clientX-r.left)*sigC.width/r.width,(t.clientY-r.top)*sigC.height/r.height]}
+  ['pointerdown','touchstart'].forEach(e=>sigC.addEventListener(e,ev=>{ev.preventDefault();exSP=exSigPos(ev)},{passive:false}));
+  ['pointermove','touchmove'].forEach(e=>sigC.addEventListener(e,ev=>{if(!exSP)return;ev.preventDefault();const p=exSigPos(ev);sctx.beginPath();sctx.moveTo(exSP[0],exSP[1]);sctx.lineTo(p[0],p[1]);sctx.stroke();exSP=p;exSigDrawn=true},{passive:false}));
+  ['pointerup','touchend','pointerleave'].forEach(e=>sigC.addEventListener(e,()=>exSP=null));
+  document.getElementById('exSigClear').onclick=()=>{sctx.clearRect(0,0,sigC.width,sigC.height);exSigDrawn=false};
+});
+
+function exBuildCanvas(){
+  const planC=document.getElementById('exPlanCanvas');
+  const sigC=document.getElementById('exSigCanvas');
+  const W=1200,pad=40;let y=pad;
+  const proj=document.getElementById('ex-proj').value||'—';
+  const room=document.getElementById('ex-room').value||'—';
+  const worker=document.getElementById('ex-worker').value||'—';
+  const role=exSelectedRole||'—';
+  const desc=document.getElementById('ex-desc').value||'—';
+  const who=document.getElementById('ex-who').value||'—';
+  const now=new Date().toLocaleDateString('he-IL');
+  let totH=230+Math.ceil(desc.length/55)*34;
+  const imgs=[];
+  if(exPlanImg){const h=planC.height*(W-2*pad)/planC.width;imgs.push({c:planC,h,t:'התוכנית — סימון השינוי'});totH+=h+70}
+  if(exPhotoImg){const h=Math.min(exPhotoImg.height*(W-2*pad)/exPhotoImg.width,900);imgs.push({im:exPhotoImg,h,t:'תמונת העבודה'});totH+=h+70}
+  if(exSigDrawn){imgs.push({c:sigC,h:160,t:'חתימת המאשר: '+who});totH+=230}
+  const out=document.createElement('canvas');out.width=W;out.height=totH+pad;
+  const x=out.getContext('2d');
+  x.fillStyle='#fff';x.fillRect(0,0,W,out.height);
+  x.fillStyle='#E8590C';x.fillRect(0,0,W,10);
+  x.fillStyle='#1A1D21';x.textAlign='right';x.direction='rtl';
+  x.font='900 38px Arial';x.fillText('תיעוד תוספת / שינוי — י.שכטר חשמל ואחזקה',W-pad,y+48);
+  x.font='500 24px Arial';x.fillStyle='#3d4248';
+  x.fillText('פרויקט: '+proj+'   ·   חדר: '+room,W-pad,y+90);
+  x.fillText('עובד: '+worker+' ('+role+')   ·   אישר: '+who+'   ·   תאריך: '+now,W-pad,y+130);
+  x.font='400 24px Arial';
+  let dy=y+180;
+  (desc.match(/.{1,55}(\s|$)/g)||[desc]).forEach(l=>{x.fillText(l.trim(),W-pad,dy);dy+=34});
+  y=dy+10;
+  imgs.forEach(b=>{
+    x.font='700 26px Arial';x.fillStyle='#E8590C';x.fillText(b.t,W-pad,y+28);y+=46;
+    if(b.c)x.drawImage(b.c,pad,y,W-2*pad,b.h);else x.drawImage(b.im,pad,y,W-2*pad,b.h);
+    x.strokeStyle='#E5E1D8';x.strokeRect(pad,y,W-2*pad,b.h);
+    y+=b.h+20;
+  });
+  return {out, proj};
+}
+
+function exSaveImg(){
+  if(!exPlanImg&&!exPhotoImg&&!exSigDrawn){alert('טען לפחות תוכנית, תמונה או חתימה');return}
+  const {out,proj}=exBuildCanvas();
+  const a=document.createElement('a');
+  a.download='תוספת_'+proj.replace(/\s+/g,'_')+'.png';
+  a.href=out.toDataURL('image/png');a.click();
+}
+
+function exShare(){
+  if(!exPlanImg&&!exPhotoImg&&!exSigDrawn){alert('טען לפחות תוכנית, תמונה או חתימה');return}
+  const {out,proj}=exBuildCanvas();
+  const proj2=document.getElementById('ex-proj').value||'—';
+  const room=document.getElementById('ex-room').value||'—';
+  const worker=document.getElementById('ex-worker').value||'—';
+  const role=exSelectedRole||'—';
+  const desc=document.getElementById('ex-desc').value||'—';
+  const who=document.getElementById('ex-who').value||'—';
+  const now=new Date().toLocaleDateString('he-IL');
+  const txt=`תוספת/שינוי — ${proj2}\nחדר: ${room}\nעובד: ${worker}${role&&role!=='—'?' ('+role+')':''}\nתיאור: ${desc}\nאישר: ${who}\nתאריך: ${now}`;
+  out.toBlob(async blob=>{
+    const file=new File([blob],'תוספת_'+proj.replace(/\s+/g,'_')+'.png',{type:'image/png'});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+      try{
+        await navigator.share({title:'תיעוד תוספת — י.שכטר',text:txt,files:[file]});
+      }catch(e){if(e.name!=='AbortError')exFallbackSave(out,proj);}
+    } else if(navigator.share){
+      try{await navigator.share({title:'תיעוד תוספת — י.שכטר',text:txt});}
+      catch(e){exFallbackSave(out,proj);}
+    } else {
+      exFallbackSave(out,proj);
+    }
+  },'image/png');
+}
+
+function exFallbackSave(out,proj){
+  const a=document.createElement('a');
+  a.download='תוספת_'+(proj||'').replace(/\s+/g,'_')+'.png';
+  a.href=out.toDataURL('image/png');a.click();
+  alert('התמונה נשמרה — שתף אותה ידנית בוואטסאפ');
+}
+
+function countTotalItems(room){
+  return getSections(room).reduce((a,s)=>a+s.items.length,0);
+}
+
+function countDoneItems(room){
+  const d=state.data[room.id]||{};
+  return getSections(room).reduce((a,s)=>a+s.items.filter(it=>d[it.id]&&d[it.id].qty!=='').length,0);
+}
+
+function openRoom(roomId){
+  const room=ROOMS.find(r=>r.id===roomId);
+  state.currentRoom=room;
+  if(!state.data[roomId]) state.data[roomId]={};
+  document.getElementById('count-room-name').textContent=room.name+(room.type?' – '+room.type:'');
+  document.getElementById('count-room-floor').textContent=room.floor;
+  buildItems(room);
+  showScreen('count');
+  requestAnimationFrame(()=>{
+    const appH = document.querySelector('.app-header').offsetHeight;
+    document.querySelector('.count-header').style.top = appH + 'px';
+  });
+}
+
+function buildItems(room){
+  const c=document.getElementById('items-container');
+  c.innerHTML='';
+  const d=state.data[room.id];
+  getSections(room).forEach(sec=>{
+    const block=document.createElement('div');
+    block.className='section-block';
+    const secFilled=sec.items.filter(it=>d[it.id]&&d[it.id].qty!=='').length;
+    const secTotal=sec.items.length;
+    const header=document.createElement('div');
+    header.className='section-header';
+    header.innerHTML=`<span>${sec.name}</span><span class="section-badge">${sec.num}</span><span style="margin-right:auto;font-size:12px;opacity:0.85">${secFilled}/${secTotal}</span><span class="section-arrow">▼</span>`;
+    const itemsWrap=document.createElement('div');
+    itemsWrap.className='section-items';
+    header.addEventListener('click',()=>{
+      header.classList.toggle('open');
+      itemsWrap.classList.toggle('open');
+    });
+    block.appendChild(header);
+    sec.items.forEach(it=>{
+      const saved=d[it.id]||{qty:'',notes:''};
+      const row=document.createElement('div');
+      row.className='item-row';
+      row.innerHTML=`
+        <div class="item-top">
+          <div class="item-num">${it.num}</div>
+          <div class="item-desc">${it.desc}</div>
+        </div>
+        <div class="item-bottom">
+          <span class="unit-badge">${it.unit}</span>
+          <span class="estimate-label">אומדן:</span>
+          <span class="estimate-val">${it.est}</span>
+          <input type="number" class="qty-input" id="qty-${it.id}"
+            placeholder="כמות" value="${saved.qty}" min="0" step="0.1"
+            oninput="onQtyChange('${it.id}',${it.est})">
+          <textarea class="notes-input" id="notes-${it.id}"
+            placeholder="הערות..." rows="1">${saved.notes}</textarea>
+        </div>
+      `;
+      itemsWrap.appendChild(row);
+    });
+    block.appendChild(itemsWrap);
+    c.appendChild(block);
+  });
+  // restore colors
+  getSections(room).forEach(sec=>sec.items.forEach(it=>{
+    const saved=state.data[room.id][it.id];
+    if(saved&&saved.qty!=='') onQtyChange(it.id,it.est);
+  }));
+}
+
+function onQtyChange(itemId, est){
+  const inp=document.getElementById('qty-'+itemId);
+  const val=parseFloat(inp.value);
+  inp.classList.remove('ok','over');
+  if(!isNaN(val)){
+    inp.classList.add(val>est?'over':'ok');
+  }
+  if(state.currentRoom){
+    if(!state.data[state.currentRoom.id]) state.data[state.currentRoom.id]={};
+    const existing=state.data[state.currentRoom.id][itemId]||{qty:'',notes:''};
+    state.data[state.currentRoom.id][itemId]={...existing,qty:inp.value};
+    saveToStorage();
+  }
+}
+
+function finishAllRooms(){
+  const filledRooms = ROOMS.filter(r => Object.keys(state.data[r.id]||{}).some(k => state.data[r.id][k].qty !== ''));
+  if(!filledRooms.length){ alert('לא מולאו נתונים בשום חדר'); return; }
+  if(!confirm('לסיים ספירה ולשמור את כל החדרים שמולאו?')) return;
+  filledRooms.forEach(room => {
+    state.currentRoom = room;
+    saveToHistory(room);
+  });
+  state.currentRoom = filledRooms[filledRooms.length-1];
+  showSummary();
+}
+
+function quickFinishRoom(roomId){
+  const room=ROOMS.find(r=>r.id===roomId);
+  if(!room) return;
+  if(!confirm('לסיים ספירה עבור '+room.name+'?')) return;
+  state.currentRoom=room;
+  saveToStorage();
+  saveToHistory(room);
+  showSummary();
+}
+
+function saveRoom(){
+  const room=state.currentRoom;
+  if(!room) return;
+  getSections(room).forEach(sec=>sec.items.forEach(it=>{
+    const qEl=document.getElementById('qty-'+it.id);
+    const nEl=document.getElementById('notes-'+it.id);
+    if(!state.data[room.id]) state.data[room.id]={};
+    state.data[room.id][it.id]={qty:qEl?qEl.value:'',notes:nEl?nEl.value:''};
+  }));
+  saveToStorage();
+  saveToHistory(room);
+  showSummary();
+}
+
+function showSummary(){
+  const info=`${state.project} | ${state.month}`;
+  document.getElementById('sum-info').textContent=info;
+  const rs=document.getElementById('rooms-summary');
+  rs.innerHTML='';
+  ROOMS.forEach(r=>{
+    const done=countDoneItems(r);
+    const total=countTotalItems(r);
+    const d=document.createElement('div');
+    d.className='room-sum-row';
+    d.innerHTML=`<span class="room-sum-name">${r.name} – ${r.floor}</span>
+      <span class="room-sum-badge">${done}/${total}</span>`;
+    rs.appendChild(d);
+  });
+  showScreen('summary');
+}
+
+function buildSummaryText(){
+  const now=new Date().toLocaleDateString('he-IL');
+  let txt=`📋 *ספירת כמויות בשטח*\n`;
+  txt+=`🏢 *י.שכטר חשמל ואחזקה*\n`;
+  txt+=`━━━━━━━━━━━━━━━━━━━━━━\n`;
+  txt+=`🏗 פרויקט: *${state.project}*\n`;
+  txt+=`👷 מנהל עבודה: ${state.foreman||'—'}\n`;
+  txt+=`📅 תאריך ספירה: ${state.month}\n`;
+  txt+=`🕐 שליחה: ${now}\n\n`;
+
+  const filledRooms=ROOMS.filter(r=>countDoneItems(r)>0);
+  filledRooms.forEach(r=>{
+    const d=state.data[r.id]||{};
+    const done=countDoneItems(r);
+    const total=countTotalItems(r);
+    txt+=`━━━━━━━━━━━━━━━━━━━━━━\n`;
+    txt+=`🏠 *${r.name} – ${r.floor}*\n`;
+    txt+=`📊 ${done}/${total} סעיפים מולאו\n\n`;
+
+    getSections(r).forEach(sec=>{
+      const filled=sec.items.filter(it=>d[it.id]&&d[it.id].qty!=='');
+      if(!filled.length) return;
+      txt+=`📌 *${sec.name}*\n`;
+      txt+=`─────────────────\n`;
+      filled.forEach(it=>{
+        const v=d[it.id];
+        const qty=parseFloat(v.qty);
+        const over=qty>it.est;
+        const icon=over?'⚠️':'✅';
+        txt+=`${icon} ${it.num}\n`;
+        txt+=`   ${it.desc}\n`;
+        txt+=`   כמות: *${v.qty} ${it.unit}* | אומדן: ${it.est}${over?' ← חריגה!':''}\n`;
+        if(v.notes) txt+=`   📝 הערה: ${v.notes}\n`;
+        txt+='\n';
+      });
+    });
+  });
+
+  const overItems=filledRooms.reduce((acc,r)=>{
+    const d=state.data[r.id]||{};
+    getSections(r).forEach(sec=>sec.items.forEach(it=>{
+      const v=d[it.id];
+      if(v&&v.qty!==''&&parseFloat(v.qty)>it.est) acc++;
+    }));
+    return acc;
+  },0);
+
+  txt+=`━━━━━━━━━━━━━━━━━━━━━━\n`;
+  txt+=overItems>0
+    ?`⚠️ *סה"כ ${overItems} סעיפים עם חריגה מהאומדן*\n`
+    :`✅ *ללא חריגות מהאומדן*\n`;
+  txt+=`\n_נשלח מאפליקציית ספירת כמויות – י.שכטר_`;
+  return txt;
+}
+
+function shareSummaryImage(){
+  const lines=buildSummaryText().split('\n');
+  const W=1100, pad=50, lh=38;
+  const H=pad*2+lh*(lines.length+2)+80;
+  const out=document.createElement('canvas');out.width=W;out.height=H;
+  const x=out.getContext('2d');
+  x.fillStyle='#fff';x.fillRect(0,0,W,H);
+  x.fillStyle='#E8590C';x.fillRect(0,0,W,10);
+  x.textAlign='right';x.direction='rtl';
+  let y=pad+50;
+  x.font='800 36px Arial';x.fillStyle='#1A1D21';
+  x.fillText('ספירת כמויות בשטח — י.שכטר חשמל',W-pad,y);
+  y+=lh+10;
+  x.font='400 26px Arial';x.fillStyle='#3d4248';
+  lines.forEach(l=>{
+    if(!l.trim()){y+=lh*0.5;return}
+    if(l.startsWith('━')||l.startsWith('─')){
+      x.fillStyle='#E5E1D8';x.fillRect(pad,y-10,W-pad*2,2);x.fillStyle='#3d4248';y+=lh*0.3;return;
+    }
+    if(l.startsWith('📋')||l.startsWith('🏢')||l.startsWith('🔬')||l.startsWith('🧪')||l.startsWith('🏗')){
+      x.font='700 26px Arial';x.fillStyle='#E8590C';
+    } else {
+      x.font='400 26px Arial';x.fillStyle='#3d4248';
+    }
+    // wrap long lines
+    const words=l.split(' ');let line='';
+    words.forEach(w=>{
+      const test=line?w+' '+line:w;
+      if(x.measureText(test).width>W-pad*2&&line){
+        x.fillText(line,W-pad,y);y+=lh;line=w;
+      } else { line=test; }
+    });
+    if(line){x.fillText(line,W-pad,y);y+=lh;}
+  });
+  out.toBlob(async blob=>{
+    const proj=(state.project||'ספירה').replace(/\s+/g,'_');
+    const file=new File([blob],`ספירה_${proj}.png`,{type:'image/png'});
+    if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+      try{await navigator.share({title:'ספירת כמויות',text:buildSummaryText(),files:[file]});return;}
+      catch(e){if(e.name==='AbortError')return;}
+    }
+    const a=document.createElement('a');
+    a.download=`ספירה_${proj}.png`;
+    a.href=URL.createObjectURL(blob);a.click();
+    alert('התמונה נשמרה — שתף ידנית בוואטסאפ');
+  },'image/png');
+}
+
+function sendWhatsApp(){
+  downloadExcel().then(()=>{
+    const phone=state.phone.replace(/\D/g,'');
+    const text=encodeURIComponent(buildSummaryText());
+    const url=phone
+      ?`https://wa.me/972${phone.replace(/^0/,'')}?text=${text}`
+      :`https://wa.me/?text=${text}`;
+    window.open(url,'_blank');
+  });
+}
+
+function sendEmail(e){
+  e.preventDefault();
+  downloadExcel().then(()=>{
+    const subject=encodeURIComponent(`ספירת כמויות בשטח – ${state.project} – ${state.month}`);
+    const body=encodeURIComponent(buildSummaryText());
+    const to='office@yshechter.co.il,shmouel@yshechter.co.il';
+    window.location.href=`mailto:${to}?subject=${subject}&body=${body}`;
+  });
+}
+
+function saveToStorage(){
+  try{localStorage.setItem('yshechter_count',JSON.stringify(state));}catch(e){}
+}
+
+// ========== HISTORY ==========
+function saveToHistory(room){
+  try{
+    const d=state.data[room.id]||{};
+    const filled=getSections(room).reduce((a,s)=>a+s.items.filter(it=>d[it.id]&&d[it.id].qty!=='').length,0);
+    const total=countTotalItems(room);
+    const entry={
+      id: Date.now(),
+      date: new Date().toLocaleString('he-IL'),
+      ts: Date.now(),
+      project: state.project,
+      foreman: state.foreman||'',
+      dateLabel: state.month,
+      phone: state.phone,
+      roomId: room.id,
+      roomName: room.name,
+      roomFloor: room.floor,
+      filled, total,
+      data: JSON.parse(JSON.stringify(d)),
+      sections: getSections(room).map(s=>({name:s.name,num:s.num,items:s.items}))
+    };
+    // שמירה מקומית
+    const hist=JSON.parse(localStorage.getItem('yshechter_history')||'[]');
+    hist.unshift(entry);
+    if(hist.length>100) hist.length=100;
+    localStorage.setItem('yshechter_history',JSON.stringify(hist));
+    // שמירה ב-Firebase (היסטוריה משותפת)
+    if(db) db.collection('counts').add(entry).catch(()=>{});
+  }catch(e){}
+}
+
+let currentHistId=null;
+
+let histSelectMode=false;
+let histCurrentList=[];
+
+function toggleSelectMode(){
+  histSelectMode=!histSelectMode;
+  const bar=document.getElementById('hist-select-bar');
+  const btn=document.getElementById('btn-select-mode');
+  bar.style.display=histSelectMode?'flex':'none';
+  btn.textContent=histSelectMode?'✕ ביטול':'☑ בחר למחיקה';
+  btn.style.background=histSelectMode?'#888':'#4a6278';
+  renderHistList(histCurrentList);
+}
+
+function updateSelectCount(){
+  const checked=document.querySelectorAll('.hist-cb:checked').length;
+  document.getElementById('hist-select-count').textContent=checked+' נבחרו';
+}
+
+function selectAllHist(){
+  document.querySelectorAll('.hist-cb').forEach(cb=>cb.checked=true);
+  updateSelectCount();
+}
+
+function deleteSelectedHist(){
+  const ids=Array.from(document.querySelectorAll('.hist-cb:checked')).map(cb=>cb.dataset.id);
+  if(!ids.length){alert('לא נבחרו ספירות');return;}
+  if(!confirm('למחוק '+ids.length+' ספירות?')) return;
+  // מחיקה מקומית
+  try{
+    let hist=JSON.parse(localStorage.getItem('yshechter_history')||'[]');
+    hist=hist.filter(h=>!ids.includes(String(h._fireId||h.id)));
+    localStorage.setItem('yshechter_history',JSON.stringify(hist));
+  }catch(e){}
+  // מחיקה מ-Firebase
+  if(db){
+    ids.forEach(id=>{
+      if(isNaN(Number(id))) db.collection('counts').doc(id).delete().catch(()=>{});
+    });
+  }
+  histSelectMode=false;
+  document.getElementById('btn-select-mode').textContent='☑ בחר למחיקה';
+  document.getElementById('btn-select-mode').style.background='#4a6278';
+  document.getElementById('hist-select-bar').style.display='none';
+  showHistory();
+}
+
+function renderHistList(hist){
+  histCurrentList=hist;
+  const el=document.getElementById('hist-list');
+  if(!hist.length){
+    el.innerHTML='<div class="hist-empty">📋<br><br>עדיין אין ספירות שמורות.<br>לאחר ספירת חדר היא תופיע כאן.</div>';
+    return;
+  }
+  el.innerHTML='';
+  hist.forEach(e=>{
+    const entryId=String(e._fireId||e.id);
+    const div=document.createElement('div');
+    div.className='hist-entry';
+    div.style.display='flex';
+    div.style.alignItems='center';
+    div.style.gap='10px';
+    if(histSelectMode){
+      div.innerHTML=`<input type="checkbox" class="hist-cb" data-id="${entryId}" onchange="updateSelectCount()" style="width:22px;height:22px;accent-color:var(--orange);flex-shrink:0;cursor:pointer">`;
+    }
+    const info=document.createElement('div');
+    info.style.flex='1';
+    info.innerHTML=`
+      <div class="hist-date">📅 ${e.date}</div>
+      <div class="hist-project">${e.project}${e.foreman?' &nbsp;·&nbsp; 👷 '+e.foreman:''}</div>
+      <div class="hist-room">${e.roomName} – ${e.roomFloor}</div>
+      <div class="hist-stats">תאריך ספירה: ${e.dateLabel} &nbsp;|&nbsp; ${e.filled}/${e.total} סעיפים מולאו</div>
+    `;
+    if(!histSelectMode) info.onclick=()=>showHistDetail(e._fireId||e.id);
+    else info.onclick=()=>{
+      const cb=div.querySelector('.hist-cb');
+      cb.checked=!cb.checked;
+      updateSelectCount();
+    };
+    div.appendChild(info);
+    el.appendChild(div);
+  });
+}
+
+function showHistory(){
+  showScreen('history');
+  const el=document.getElementById('hist-list');
+  if(db){
+    el.innerHTML='<div class="hist-empty">⏳ טוען...</div>';
+    db.collection('counts').orderBy('ts','desc').limit(200).get()
+      .then(snap=>{
+        const hist=snap.docs.map(d=>({...d.data(), _fireId:d.id}));
+        renderHistList(hist);
+      })
+      .catch(()=>{
+        const hist=JSON.parse(localStorage.getItem('yshechter_history')||'[]');
+        renderHistList(hist);
+      });
+  } else {
+    const hist=JSON.parse(localStorage.getItem('yshechter_history')||'[]');
+    renderHistList(hist);
+  }
+}
+
+function renderHistDetail(e){
+  document.getElementById('hist-detail-title').textContent=`${e.roomName} — ${e.project}`;
+  const c=document.getElementById('hist-detail-content');
+  c.innerHTML='';
+  const info=document.createElement('div');
+  info.className='hist-detail-header';
+  info.innerHTML=`<div class="hist-detail-title">${e.project} | ${e.roomName}</div>
+    ${e.foreman?`<div class="hist-detail-sub">👷 מנהל עבודה: ${e.foreman}</div>`:''}
+    <div class="hist-detail-sub">תאריך ספירה: ${e.dateLabel} &nbsp;·&nbsp; נשמר: ${e.date}</div>
+    <div class="hist-detail-sub" style="margin-top:4px">${e.filled} מתוך ${e.total} סעיפים מולאו</div>`;
+  c.appendChild(info);
+  e.sections.forEach(sec=>{
+    const filled=sec.items.filter(it=>e.data[it.id]&&e.data[it.id].qty!=='');
+    if(!filled.length) return;
+    const block=document.createElement('div');
+    block.className='section-block';
+    block.innerHTML=`<div class="section-header"><span>${sec.name}</span><span class="section-badge">${sec.num}</span></div>`;
+    filled.forEach(it=>{
+      const v=e.data[it.id];
+      const qty=parseFloat(v.qty);
+      const cls=qty>it.est?'over':'ok';
+      const flag=qty>it.est?' ⚠️':'';
+      const row=document.createElement('div');
+      row.className='hist-item-row';
+      row.innerHTML=`
+        <div>
+          <div class="hist-item-num">${it.num}</div>
+          <div class="hist-item-desc">${it.desc}</div>
+          ${v.notes?`<div style="font-size:12px;color:var(--muted);margin-top:3px">📝 ${v.notes}</div>`:''}
+        </div>
+        <div style="text-align:center;min-width:80px">
+          <div class="hist-qty ${cls}">${v.qty} ${it.unit}${flag}</div>
+          <div style="font-size:11px;color:var(--muted)">אומדן: ${it.est}</div>
+        </div>`;
+      block.appendChild(row);
+    });
+    c.appendChild(block);
+  });
+  showScreen('hist-detail');
+}
+
+function showHistDetail(id){
+  currentHistId=id;
+  if(db && typeof id === 'string' && isNaN(Number(id))){
+    db.collection('counts').doc(id).get()
+      .then(doc=>{ if(doc.exists) renderHistDetail({...doc.data(),_fireId:doc.id}); })
+      .catch(()=>{});
+    return;
+  }
+  const numId=typeof id==='string'?Number(id):id;
+  const hist=JSON.parse(localStorage.getItem('yshechter_history')||'[]');
+  const e=hist.find(h=>h.id===numId||h.id===id);
+  if(!e) return;
+  renderHistDetail(e);
+}
+
+async function downloadHistSummary(){
+  const hist = histCurrentList;
+  if(!hist.length){ alert('אין ספירות בהיסטוריה'); return; }
+  try {
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'י.שכטר חשמל';
+    const white='FFFFFFFF', darkBg='FF1A1D21', orange='FFE8590C', yellow='FFFFF0AA', lightGray='FFF2F2F2';
+
+    const chapters = [
+      {title:'פרק 081 - עבודות חשמל: מעבדות ומשרד 2308, 2309, 2216', sheet:1},
+      {title:'פרק 082 - עבודות חשמל: שדרוג מערכת חשמל', sheet:3},
+      {title:'פרק 083 - עבודות חשמל: מעבדות 2204, 1002 ו-1006E', sheet:2},
+    ];
+
+    // צבור כמויות מכל הספירות
+    const agg = {}; // itemId -> total qty
+    hist.forEach(e => {
+      if(!e.data) return;
+      Object.keys(e.data).forEach(itemId => {
+        const qty = parseFloat(e.data[itemId].qty);
+        if(!isNaN(qty)) agg[itemId] = (agg[itemId]||0) + qty;
+      });
+    });
+
+    const ws = wb.addWorksheet('ריכוז היסטוריה', {views:[{rightToLeft:true}]});
+    ws.columns = [{width:16},{width:58},{width:9},{width:15},{width:15},{width:11}];
+
+    const titleRow = ws.addRow(['ריכוז ספירות היסטוריה — י.שכטר חשמל']);
+    ws.mergeCells(`A${titleRow.number}:F${titleRow.number}`);
+    titleRow.height = 28;
+    titleRow.getCell(1).font = {bold:true,size:14,color:{argb:white}};
+    titleRow.getCell(1).fill = {type:'pattern',pattern:'solid',fgColor:{argb:darkBg}};
+    titleRow.getCell(1).alignment = {horizontal:'center',vertical:'middle'};
+
+    const infoRow = ws.addRow(['סה"כ ספירות בריכוז: '+hist.length,'','','','','']);
+    ws.mergeCells(`A${infoRow.number}:F${infoRow.number}`);
+    infoRow.getCell(1).font = {bold:true,size:11};
+    infoRow.getCell(1).fill = {type:'pattern',pattern:'solid',fgColor:{argb:lightGray}};
+    ws.addRow([]);
+
+    chapters.forEach(ch => {
+      const chRooms = ROOMS.filter(r=>r.sheet===ch.sheet);
+      if(!chRooms.length) return;
+      const sections = getSections(chRooms[0]);
+
+      const chRow = ws.addRow([ch.title,'','','','','']);
+      ws.mergeCells(`A${chRow.number}:F${chRow.number}`);
+      chRow.height = 22;
+      chRow.getCell(1).font = {bold:true,size:12,color:{argb:white}};
+      chRow.getCell(1).fill = {type:'pattern',pattern:'solid',fgColor:{argb:darkBg}};
+      chRow.getCell(1).alignment = {horizontal:'right',vertical:'middle'};
+
+      const hdr = ws.addRow(['מספר','תיאור','יח\'','אומדן','ספירה','הערה']);
+      hdr.height = 18;
+      ['FF2F4F4F','FF2F4F4F','FF2F4F4F','FF2F4F4F','FF2F4F4F','FF2F4F4F'].forEach((c,i)=>{
+        hdr.getCell(i+1).font={bold:true,size:10,color:{argb:white}};
+        hdr.getCell(i+1).fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF2F4F4F'}};
+        hdr.getCell(i+1).alignment={horizontal:'center'};
+      });
+
+      sections.forEach(sec => {
+        const secRow = ws.addRow([sec.num, sec.name,'','','','']);
+        ws.mergeCells(`B${secRow.number}:F${secRow.number}`);
+        secRow.getCell(1).font={bold:true,size:10};
+        secRow.getCell(2).font={bold:true,size:10};
+        secRow.getCell(1).fill={type:'pattern',pattern:'solid',fgColor:{argb:yellow}};
+        secRow.getCell(2).fill={type:'pattern',pattern:'solid',fgColor:{argb:yellow}};
+
+        sec.items.forEach((it,idx) => {
+          const qty = agg[it.id]||0;
+          const row = ws.addRow([it.num, it.desc, it.unit, it.est, qty||'', '']);
+          const bg = idx%2===0 ? 'FFFAFAFA' : white;
+          for(let i=1;i<=6;i++){
+            row.getCell(i).fill={type:'pattern',pattern:'solid',fgColor:{argb:bg}};
+            row.getCell(i).font={size:10};
+          }
+          if(qty>0){
+            row.getCell(5).font={bold:true,size:10,color:{argb:qty>it.est?'FFCC0000':'FF006600'}};
+          }
+          row.getCell(2).alignment={wrapText:true};
+        });
+      });
+      ws.addRow([]);
+    });
+
+    const buf = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'ריכוז-היסטוריה.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(a.href); },1000);
+  } catch(err) {
+    alert('שגיאה: '+(err.message||err));
+  }
+}
+
+function deleteHistEntry(){
+  if(!confirm('למחוק ספירה זו מההיסטוריה?')) return;
+  // מחיקה מקומית
+  try{
+    let hist=JSON.parse(localStorage.getItem('yshechter_history')||'[]');
+    hist=hist.filter(h=>h.id!==currentHistId&&h._fireId!==currentHistId);
+    localStorage.setItem('yshechter_history',JSON.stringify(hist));
+  }catch(e){}
+  // מחיקה מ-Firebase
+  if(db && typeof currentHistId==='string' && isNaN(Number(currentHistId))){
+    db.collection('counts').doc(currentHistId).delete().catch(()=>{});
+  }
+  showHistory();
+}
+
+function loadFromStorage(){
+  try{
+    const raw=localStorage.getItem('yshechter_count');
+    if(!raw) return;
+    const saved=JSON.parse(raw);
+    if(saved.project){
+      state=saved;
+      document.getElementById('inp-project').value=saved.project||'';
+      document.getElementById('inp-phone').value=saved.phone||'';
+    }
+  }catch(e){}
+}
+
+async function downloadExcel(){
+  try {
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'י.שכטר חשמל';
+
+  const filledRooms = ROOMS.filter(r => Object.keys(state.data[r.id]||{}).length > 0);
+  const roomsToExport = filledRooms.length > 0 ? filledRooms : ROOMS;
+
+  const orange = 'FFE8590C', darkBg = 'FF1A1D21', lightGray = 'FFF2F2F2', white = 'FFFFFFFF';
+
+  // ===== גיליון ריכוז =====
+  const wsSummary = wb.addWorksheet('ריכוז', {views:[{rightToLeft:true}]});
+  wsSummary.columns = [{width:16},{width:58},{width:9},{width:15},{width:15},{width:11}];
+
+  wsSummary.mergeCells('A1:F1');
+  const stRow = wsSummary.getRow(1); stRow.height = 28;
+  const stCell = stRow.getCell(1);
+  stCell.value = 'ריכוז כמויות — י.שכטר חשמל ואחזקה';
+  stCell.font = {bold:true, size:14, color:{argb:white}};
+  stCell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:darkBg}};
+  stCell.alignment = {horizontal:'center', vertical:'middle'};
+
+  const addSumInfo = (label, value) => {
+    const row = wsSummary.addRow([label, value, '', '', '', '']);
+    wsSummary.mergeCells(`B${row.number}:F${row.number}`);
+    row.getCell(1).font = {bold:true, size:11};
+    row.getCell(1).fill = {type:'pattern',pattern:'solid',fgColor:{argb:lightGray}};
+    row.getCell(2).font = {size:11};
+    row.getCell(2).fill = {type:'pattern',pattern:'solid',fgColor:{argb:lightGray}};
+  };
+  addSumInfo('פרויקט:', state.project);
+  addSumInfo('מנהל עבודה:', state.foreman||'—');
+  addSumInfo('תאריך ספירה:', state.month);
+  wsSummary.addRow([]);
+
+  const sumHdr = wsSummary.addRow(['מספר','תיאור פריט','יח׳','כמות אומדן','כמות נוכחית','הפרש']);
+  sumHdr.height = 20;
+  sumHdr.eachCell(cell => {
+    cell.font = {bold:true, size:11, color:{argb:white}};
+    cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:orange}};
+    cell.alignment = {horizontal:'center', vertical:'middle'};
+  });
+
+  // פרקים בסדר כמו האקסל: 081, 082, 083
+  const chapters = [
+    {title:'פרק 081 - עבודות חשמל: מעבדות ומשרד 2308, 2309, 2216', sheet:1},
+    {title:'פרק 082 - עבודות חשמל: שדרוג מערכת חשמל מכון למדעי כדור הארץ', sheet:3},
+    {title:'פרק 083 - עבודות חשמל: מעבדות 2204, 1002 ו-1006E', sheet:2},
+  ];
+
+  chapters.forEach(ch => {
+    const chRooms = ROOMS.filter(r => r.sheet === ch.sheet);
+    const sections = getSections(chRooms[0]);
+
+    // כותרת פרק
+    const chRow = wsSummary.addRow([ch.title,'','','','','']);
+    wsSummary.mergeCells(`A${chRow.number}:F${chRow.number}`);
+    const chCell = chRow.getCell(1);
+    chCell.font = {bold:true, size:12, color:{argb:white}};
+    chCell.fill = {type:'pattern',pattern:'solid',fgColor:{argb:'FF1A1D21'}};
+    chCell.alignment = {horizontal:'right', vertical:'middle'};
+    chRow.height = 22;
+
+    sections.forEach(sec => {
+      // כותרת תת-פרק
+      const secRow = wsSummary.addRow([sec.num + ' — ' + sec.name,'','','','','']);
+      wsSummary.mergeCells(`A${secRow.number}:F${secRow.number}`);
+      secRow.getCell(1).font = {bold:true, size:11, color:{argb:'FF1A1D21'}};
+      secRow.getCell(1).fill = {type:'pattern',pattern:'solid',fgColor:{argb:'FFFFF3CC'}};
+      secRow.getCell(1).alignment = {horizontal:'right'};
+      secRow.height = 18;
+
+      sec.items.forEach((it, idx) => {
+        let totalQty = 0, hasAny = false;
+        chRooms.forEach(r => {
+          const v = (state.data[r.id]||{})[it.id];
+          if (v && v.qty !== '') { totalQty += parseFloat(v.qty)||0; hasAny = true; }
+        });
+        const qtyDisplay = hasAny ? totalQty : '';
+        const diff = hasAny ? (totalQty - it.est).toFixed(1) : '';
+        const dataRow = wsSummary.addRow([it.num, it.desc, it.unit, it.est, qtyDisplay, diff]);
+        const rowBg = idx % 2 === 0 ? 'FFFFFFFF' : 'FFF9F9F9';
+        dataRow.eachCell({includeEmpty:true}, (cell, col) => {
+          cell.fill = {type:'pattern',pattern:'solid',fgColor:{argb:rowBg}};
+          cell.border = {bottom:{style:'hair',color:{argb:'FFDDDDDD'}}};
+          if(col >= 3) cell.alignment = {horizontal:'center'};
+          if(col === 2) cell.alignment = {wrapText:true, horizontal:'right'};
+        });
+        if(hasAny && totalQty > it.est) dataRow.getCell(6).font = {bold:true, color:{argb:'FFCC0000'}};
+      });
+
+      // שורת סה"כ לתת-פרק
+      const totRow = wsSummary.addRow(['סה"כ ' + sec.name,'','','','','']);
+      wsSummary.mergeCells(`A${totRow.number}:F${totRow.number}`);
+      totRow.getCell(1).font = {bold:true, size:10, color:{argb:'FF666666'}};
+      totRow.getCell(1).alignment = {horizontal:'right'};
+      wsSummary.addRow([]);
+    });
+  });
+
+  wsSummary.views[0].state = 'frozen';
+  wsSummary.views[0].ySplit = 6;
+
+  roomsToExport.forEach(r => {
+    const d = state.data[r.id] || {};
+    const ws = wb.addWorksheet(r.name.replace(/[:\\\/\?\*\[\]]/g,''), {
+      views: [{rightToLeft: true}]
+    });
+    ws.columns = [
+      {width:16},{width:56},{width:9},{width:15},{width:15},{width:11},{width:30}
+    ];
+
+    // שורה 1 — כותרת ראשית
+    ws.mergeCells('A1:G1');
+    const titleRow = ws.getRow(1);
+    titleRow.height = 28;
+    const titleCell = titleRow.getCell(1);
+    titleCell.value = 'י.שכטר חשמל ואחזקה — ספירת כמויות בשטח';
+    titleCell.font = {bold:true, size:14, color:{argb:white}};
+    titleCell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:darkBg}};
+    titleCell.alignment = {horizontal:'center', vertical:'middle'};
+
+    // שורות פרטי פרויקט
+    const infoStyle = {font:{bold:true, size:11}, fill:{type:'pattern',pattern:'solid',fgColor:{argb:lightGray}}};
+    const addInfo = (label, value) => {
+      const row = ws.addRow([label, value, '', '', '', '', '']);
+      ws.mergeCells(`B${row.number}:G${row.number}`);
+      row.getCell(1).font = {bold:true, size:11};
+      row.getCell(1).fill = {type:'pattern',pattern:'solid',fgColor:{argb:lightGray}};
+      row.getCell(2).font = {size:11};
+      row.getCell(2).fill = {type:'pattern',pattern:'solid',fgColor:{argb:lightGray}};
+    };
+    addInfo('פרויקט:', state.project);
+    addInfo('מנהל עבודה:', state.foreman||'—');
+    addInfo('תאריך ספירה:', state.month);
+    addInfo('חדר:', r.name + ' — ' + r.floor);
+
+    ws.addRow([]);
+
+    // שורת כותרות עמודות
+    const hdr = ws.addRow(['מספר','תיאור פריט','יח׳','כמות אומדן','כמות ספירה','הפרש','הערות']);
+    hdr.height = 20;
+    hdr.eachCell(cell => {
+      cell.font = {bold:true, size:11, color:{argb:white}};
+      cell.fill = {type:'pattern', pattern:'solid', fgColor:{argb:orange}};
+      cell.alignment = {horizontal:'center', vertical:'middle'};
+      cell.border = {bottom:{style:'thin',color:{argb:'FFCCCCCC'}}};
+    });
+
+    // נתונים
+    getSections(r).forEach(sec => {
+      const secRow = ws.addRow([sec.name, '', '', '', '', '', '']);
+      ws.mergeCells(`A${secRow.number}:G${secRow.number}`);
+      secRow.getCell(1).font = {bold:true, size:11, color:{argb:darkBg}};
+      secRow.getCell(1).fill = {type:'pattern',pattern:'solid',fgColor:{argb:'FFE8E4DC'}};
+
+      sec.items.forEach(it => {
+        const v = d[it.id] || {qty:'', notes:''};
+        const qty = v.qty !== '' ? parseFloat(v.qty) : '';
+        const diff = qty !== '' ? (qty - it.est).toFixed(1) : '';
+        const dataRow = ws.addRow([it.num, it.desc, it.unit, it.est, v.qty, diff, v.notes||'']);
+        dataRow.eachCell({includeEmpty:true}, (cell, col) => {
+          cell.border = {bottom:{style:'hair',color:{argb:'FFDDDDDD'}}};
+          if(col >= 3) cell.alignment = {horizontal:'center'};
+        });
+        // הדגשת הפרש חיובי באדום
+        if(qty !== '' && qty > it.est){
+          dataRow.getCell(6).font = {bold:true, color:{argb:'FFCC0000'}};
+        }
+      });
+    });
+
+    // הקפאת שורת כותרות
+    ws.views[0].state = 'frozen';
+    ws.views[0].ySplit = 7;
+  });
+
+  const buf = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const url = URL.createObjectURL(blob);
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  if(isIOS){
+    window.open(url, '_blank');
+    setTimeout(()=>URL.revokeObjectURL(url), 5000);
+  } else {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `ספירת-כמויות-${state.project}-${state.month}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); }, 1000);
+  }
+  } catch(err) {
+    alert('שגיאה בהורדת הקובץ: ' + (err.message||err));
+  }
+}
+
+function newCount(){
+  state={project:'',month:'',phone:'',foreman:'',currentRoom:null,data:{}};
+  document.getElementById('inp-project').value='';
+  document.getElementById('inp-month').value='';
+  document.getElementById('inp-phone').value='';
+  document.getElementById('inp-foreman').value='';
+  document.getElementById('header-info').style.display='none';
+  try{localStorage.removeItem('yshechter_count');}catch(e){}
+  showScreen('start');
+}
+
+// auto-save on notes change
+document.addEventListener('input',function(e){
+  if(e.target.classList.contains('notes-input')&&state.currentRoom){
+    const itemId=e.target.id.replace('notes-','');
+    if(!state.data[state.currentRoom.id]) state.data[state.currentRoom.id]={};
+    const ex=state.data[state.currentRoom.id][itemId]||{qty:'',notes:''};
+    state.data[state.currentRoom.id][itemId]={...ex,notes:e.target.value};
+    saveToStorage();
+  }
+});
+
+loadFromStorage();
+
+window.addEventListener('beforeunload', function(e){
+  const hasData = Object.keys(state.data).some(r => Object.keys(state.data[r]||{}).some(k => state.data[r][k].qty !== ''));
+  if(hasData){
+    e.preventDefault();
+    e.returnValue = 'יש נתוני ספירה שלא נשלחו. האם אתה בטוחה שברצונך לצאת?';
+    return e.returnValue;
+  }
+});
+
+// כותרת מתכווצת בגלילה
+function onScroll(){
+  const header = document.querySelector('.app-header');
+  const scrollY = window.scrollY || window.pageYOffset || document.documentElement.scrollTop || 0;
+  if(scrollY < 30){
+    header.classList.add('header-top');
+  } else {
+    header.classList.remove('header-top');
+  }
+}
+window.addEventListener('scroll', onScroll, {passive:true});
+document.addEventListener('scroll', onScroll, {passive:true});
+onScroll();
+
+// חץ אחורה של הטלפון
+function pushAppState(){ history.pushState({app:true},''); }
+pushAppState();
+window.addEventListener('popstate', function(e){
+  const hasData = Object.keys(state.data).some(r=>Object.keys(state.data[r]||{}).some(k=>state.data[r][k].qty!==''));
+  if(hasData){
+    pushAppState();
+    showExitConfirm();
+  } else {
+    pushAppState();
+  }
+});
+
+function showExitConfirm(){
+  let overlay = document.getElementById('exit-overlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'exit-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:16px;padding:28px 24px;text-align:center;max-width:320px;width:100%;direction:rtl">
+        <div style="font-size:32px;margin-bottom:12px">⚠️</div>
+        <div style="font-size:18px;font-weight:800;color:#1A1D21;margin-bottom:8px">יציאה מהאפליקציה</div>
+        <div style="font-size:15px;color:#555;margin-bottom:24px">יש נתוני ספירה שלא נשלחו.<br>את בטוחה שרוצה לצאת?</div>
+        <div style="display:flex;gap:10px">
+          <button onclick="document.getElementById('exit-overlay').remove()" style="flex:1;padding:12px;border-radius:10px;border:2px solid #ddd;background:#fff;font-size:15px;font-weight:700;font-family:Heebo,Arial;cursor:pointer;color:#1A1D21">הישארי</button>
+          <button onclick="history.go(-2)" style="flex:1;padding:12px;border-radius:10px;border:none;background:#E8590C;color:#fff;font-size:15px;font-weight:700;font-family:Heebo,Arial;cursor:pointer">יציאה</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+  } else {
+    overlay.style.display = 'flex';
+  }
+}
+</script>
+</body>
+</html>
+
 

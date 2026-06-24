@@ -210,6 +210,7 @@ body{font-family:'Heebo',Arial,sans-serif;background:#eef1f4;color:#2c3e50;direc
         <datalist id="project-list">
           <option value="מכון למדעי כדור הארץ">
           <option value="בניין מאיץ מרכז אנרגיה">
+          <option value="הדסה עין כרם בניין רפואה קומה 2">
         </datalist>
       </div>
       <div class="form-group">
@@ -235,7 +236,63 @@ body{font-family:'Heebo',Arial,sans-serif;background:#eef1f4;color:#2c3e50;direc
     <div class="section-title">בחר חדר לספירה</div>
     <div class="room-cards" id="room-cards"></div>
     <button onclick="finishAllRooms()" style="width:100%;margin-top:16px;padding:14px;border-radius:12px;border:none;background:#27ae60;color:#fff;font-size:16px;font-weight:800;font-family:Heebo,Arial;cursor:pointer">✓ סיום ספירה</button>
+    <button onclick="showSigns()" style="width:100%;margin-top:10px;padding:14px;border-radius:12px;border:none;background:#7b5ea7;color:#fff;font-size:16px;font-weight:800;font-family:Heebo,Arial;cursor:pointer">🪧 רשימת שלטים</button>
     <button class="btn-history" onclick="showHistory()" style="margin-top:12px">🕐 היסטוריית ספירות</button>
+  </div>
+</div>
+
+<!-- SCREEN 7: SIGNS LIST -->
+<div class="screen" id="screen-signs">
+  <div class="hist-wrap">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <button onclick="showRooms()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:15px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">→ חזרה</button>
+      <div id="signs-title" style="font-size:18px;font-weight:800;color:var(--dark);flex:1">🪧 רשימת שלטים</div>
+    </div>
+
+    <!-- טופס הוספת שלט -->
+    <div id="signs-form" style="background:#fff;border-radius:14px;padding:16px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.08);display:none">
+      <div style="font-size:15px;font-weight:800;color:var(--dark);margin-bottom:12px">הוספת שלט חדש</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <label style="font-size:12px;font-weight:700;color:#666;display:block;margin-bottom:4px">שם שלט</label>
+          <input id="sign-name" type="text" placeholder="שם השלט..." style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:Heebo,Arial;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:#666;display:block;margin-bottom:4px">גודל</label>
+          <input id="sign-size" type="text" placeholder='למשל: 60×40 ס"מ' style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:Heebo,Arial;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:#666;display:block;margin-bottom:4px">צבע</label>
+          <div style="display:flex;gap:6px;align-items:center">
+            <input id="sign-color-text" type="text" placeholder="צבע..." style="flex:1;padding:10px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:Heebo,Arial">
+            <input id="sign-color-pick" type="color" value="#ffffff" style="width:38px;height:38px;border:none;border-radius:8px;cursor:pointer;padding:2px">
+          </div>
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:#666;display:block;margin-bottom:4px">חדר / מיקום</label>
+          <input id="sign-location" type="text" placeholder="חדר / מיקום..." style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:Heebo,Arial;box-sizing:border-box">
+        </div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:12px;font-weight:700;color:#666;display:block;margin-bottom:4px">תמונה</label>
+        <label id="sign-photo-label" style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1.5px dashed var(--border);cursor:pointer;font-size:14px;color:#555;font-family:Heebo,Arial">
+          📷 צלם או בחר תמונה
+          <input id="sign-photo" type="file" accept="image/*" capture="environment" style="display:none" onchange="onSignPhoto(this)">
+        </label>
+        <div id="sign-photo-preview" style="margin-top:8px;display:none">
+          <img id="sign-photo-img" style="max-width:100%;max-height:180px;border-radius:10px;object-fit:cover">
+          <button onclick="clearSignPhoto()" style="display:block;margin-top:6px;background:#eee;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:Heebo,Arial">✕ הסר תמונה</button>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button onclick="saveSign()" style="flex:1;padding:12px;border-radius:10px;border:none;background:#7b5ea7;color:#fff;font-size:15px;font-weight:800;font-family:Heebo,Arial;cursor:pointer">+ הוסף שלט</button>
+        <button onclick="document.getElementById('signs-form').style.display='none'" style="padding:12px 16px;border-radius:10px;border:none;background:#eee;color:#555;font-size:15px;font-weight:700;font-family:Heebo,Arial;cursor:pointer">ביטול</button>
+      </div>
+    </div>
+
+    <button onclick="document.getElementById('signs-form').style.display='block';document.getElementById('sign-name').focus()" style="width:100%;padding:13px;border-radius:12px;border:none;background:#7b5ea7;color:#fff;font-size:15px;font-weight:800;font-family:Heebo,Arial;cursor:pointer;margin-bottom:16px">+ הוסף שלט</button>
+
+    <div id="signs-list"></div>
   </div>
 </div>
 
@@ -406,7 +463,7 @@ const ROOMS = [
 
 // Sheet 1 sections (rooms 216, 309, 308)
 const SECTIONS_S1 = [
-  {name:'נקודות', num:'81.01', items:[
+  {name:'נקודות', num:'81.01', note:'בכל הנקודות להלן שנדרש לבצע בצורה סמויה בקיר העבודה כוללת סיתות בקיר בטון או בלוקים, הנחת צנרת וכיסוי בבטון ע"ג הצנרת. השקעים יסופקו בהתאם לפי רוט: לבן-רגיל, כחול-UPS, אדום-גנרטור.', items:[
     {id:'81.01.002',num:'02.81.01.002',desc:'נקודת מאור',unit:'נק\'',est:20},
     {id:'81.01.003',num:'02.81.01.003',desc:'תוספת למחיר נקודת מאור עבור מפסק מחליף',unit:'יח\'',est:2},
     {id:'81.01.004',num:'02.81.01.004',desc:'נקודת מקבץ שקעים לחשמל ולתקשורת הכוללת: 4 שקעי חשמל בצבעים שונים (לבן, כחול, אדום) כולל נקודת ח"ק 16A מלאה למקבץ, הכנה ל-4 נקודות תקשורת ע"י שתי צינורות 25 מ"מ ממגש כבלים לתקשורת במעבדה, לרבות 2 כיסויי דמה. המחיר כולל קופסת "אופיס ניסקו" להתקנה גלויה או סמויה, או משולבים בתעלת PVC',unit:'נק\'',est:1},
@@ -432,14 +489,14 @@ const SECTIONS_S1 = [
     {id:'81.01.024',num:'02.81.01.024',desc:'חיבור מוליך הארקה לצנרת מתכתית באמצעות שלת הארקה כבדה מגולוונת עד "3',unit:'יח\'',est:1},
     {id:'81.01.025',num:'02.81.01.025',desc:'גשר הארקה לשעון מים מפס שטוח מגולוון 20X2 מ"מ כולל חבקים',unit:'יח\'',est:1},
   ]},
-  {name:'גופי תאורה', num:'81.02', items:[
+  {name:'גופי תאורה', num:'81.02', note:'כל גופי התאורה מבוססי LED יסופקו עם אחריות 5 שנים לפחות, תקן מת"י, אורך חיים 50,000 שעות לפי LM-80, גוון CCT=4000K, דרייבר בתקן CB/TUV, עיגון כפול לתקרת בטון. בחדרים 1002 ו-2204 יסופקו ג"ת מתאימים לחדר נקי CLASS 1,000 / CLASS 10,000.', items:[
     {id:'81.02.002',num:'02.81.02.002',desc:'ג"ת שלט יציאה חד תכליתי (כבוי במצב שגרה) מאלומניום מלוטש עם 6 נורות לד, זמן עבודה 90 דקות, עוצמת תאורה 60%, בהתקנה בתקרה או על הקיר, שילוט "יציאה" וסימון חץ אלקטרולייט, דגם EL622LED אלקטרוזן, PROFILE MAXI-LED, או סדרת XY-VEX מתוצרת "אנלטק". מאושרי מכון התקנים לת"י 20 חלק 2.22',unit:'יח\'',est:3},
     {id:'81.02.003',num:'02.81.02.003',desc:'ג"ת חירום חד תכליתי לתאורת התמצאות מבוסס נורות לד, תפוקה 170 לומן, זמן הארה 180 דקות. ללא התראות קוליות. כולל סוללה נטענת ניקל מטל 2200mAh 3.6V, מבדק תקינות אינטגראלי ואישור מכון התקנים לתקן 20 חלק 2.22',unit:'יח\'',est:2},
     {id:'81.02.004',num:'02.81.02.004',desc:'ג"ת לד 18W עגול מפוליאסטר בצבע לבן, מותקן גלוי על הטיח או שקוע בתקרה, מוגן מים IK10-IP65, שטף אור 2160 לומן, כיסוי פוליקרבונט אנטי ונדלי, דגם "גלבוע פרו" ספק: געש תאורה',unit:'יח\'',est:1},
     {id:'81.02.005',num:'02.81.02.005',desc:'ג"ת פנל לד איכותי 36W במידות 60X60X5 ס"מ שקוע בתקרה אקוסטית, תפוקת אור 4320LM לפחות, CCT=4000K, עם דרייבר איכותי דוגמת פיליפס או עין השופט, הגנה IP40, אישור פיקוד העורף',unit:'יח\'',est:8},
     {id:'81.02.006',num:'02.81.02.006',desc:'ג"ת לד בהספק 43W במידות 60X60 ס"מ עשוי מפרופיל אלומיניום צבוע בתנור לבן, שקוע בתקרה, מתאים לחדרים נקיים ISO3 IP65 CLASS 10,000, דרייבר איכותי, תפוקת אור 146 לומן/וואט, גוון 4000K, דגם LUG MEDUCA 2',unit:'יח\'',est:3},
   ]},
-  {name:'אינסטלציה חשמלית', num:'81.03', items:[
+  {name:'אינסטלציה חשמלית', num:'81.03', note:'מחיר הכבלים והמוליכים כולל אספקה, השחלה בצינורות ו/או הנחה במגשי כבלים וחיבור מושלם בשתי הקצוות.', items:[
     {id:'81.03.002',num:'02.81.03.002',desc:'תעלה פלסטית מחומר כבה מאליו בצבע לבן עם מכסה, במידות 120X60 מ"מ עם מחיצת הפרדה, להתקנה על הקיר או בריהוט, דוגמת IBOCO של "ישראלוקס" או GGK של "קשטן". מחיר התעלה כולל סופיות מקוריות, הסתעפויות, זויות ומחזיקי כבלים פנימיים',unit:'מ"א',est:10},
     {id:'81.03.003',num:'02.81.03.003',desc:'תעלה פלסטית כנ"ל אך במידות 60X40 מ"מ',unit:'מ"א',est:5},
     {id:'81.03.004',num:'02.81.03.004',desc:'מגש רשת לכבלים מגולוון גלוון קר במידות 20X8.5 ס"מ, מותקן על הקיר ו/או מתחת לתקרה בטון באמצעות קונזולות, מתלים וחיזוקים תעשייתיים דוגמת MFK של ליראד, מרחקים כל 1.5 מטר לפחות. כולל חיזוקים, קונזולות ומתלים',unit:'מ"א',est:30},
@@ -456,7 +513,7 @@ const SECTIONS_S1 = [
     {id:'81.03.015',num:'02.81.03.015',desc:'פס הארקה מותקן על הקיר ע"ג מבודדים, עשוי מנחושת 40X4 מ"מ, לרבות כל ברגי החיבור, אומים, דיסקיות פליז, שילוט וכל חומרי העזר. באורך 30 ס"מ לפחות',unit:'קומפלט',est:2},
     {id:'81.03.016',num:'02.81.03.016',desc:'איטום פתחים לכבלי חשמל ותקשורת למעבר אש ועשן במשך שעתיים באמצעות חומר איטום אלסטומרי מאושר ע"י שרותי כבאות ירושלים, דוגמת FS 1900 של אבצום. המחיר לפי שטח כולל מצטבר',unit:'מ"ר',est:0.3},
   ]},
-  {name:'לוח חשמל מעבדה', num:'81.04', items:[
+  {name:'לוח חשמל מעבדה', num:'81.04', note:'כל לוחות החשמל בפרויקט יבנו במפעל לוחות מאושר תקן 61439 כולל אישור בדיקת בכתב של מכון התקנים. הציוד יהיה תוצרת שניידר אלקטריק, EATON, ABB או אחר שיאושר בכתב מראש ע"י מהנדס חשמל האוניברסיטה.', items:[
     {id:'81.04.002',num:'02.81.04.002',desc:'תוספת מאמ"ת תלת פאזי 10KA 3X63A תקן IEC898 בלוח קיים, כולל כל העבודות הנדרשות בלוח, עבודת שטח ע"י חווט לוחות מנוסה',unit:'יח\'',est:1},
     {id:'81.04.003',num:'02.81.04.003',desc:'תוספת מאמ"ת תלת פאזי 10KA 3X32A תקן IEC898 בלוח קיים, כולל כל העבודות הנדרשות בלוח, עבודת שטח ע"י חווט לוחות מנוסה',unit:'יח\'',est:1},
     {id:'81.04.004',num:'02.81.04.004',desc:'מאמ"ת תלת פאזי 10KA 3X63A תקן IEC898',unit:'יח\'',est:1},
@@ -481,7 +538,7 @@ const SECTIONS_S1 = [
     {id:'81.04.023',num:'02.81.04.023',desc:'יחידת פיקוד מסוג ISO (מצג בקרה) לניתוק מפסק ראשי ו/או מ"א בזמן אש עם 4 מגעים יבשים לפיקוד',unit:'יח\'',est:1},
     {id:'81.04.024',num:'02.81.04.024',desc:'מבנה לוח חשמל ראשי מעבדות בקומה 3 אגף דרום, מחולק ל-3 שדות: בלתי חיוני, גנרטור ושדה UPS, עם פאנלים פנימיים ודלתות. מפח קדופריט מגולוון צבוע בתנור. כולל פסי צבירה עד 4x100A, מהדקים, פסי אפס והארקה, חיווט, שילוט. מחיר לפי שטח חזית נטו במ"ר',unit:'מ"ר',est:3.5},
   ]},
-  {name:'מערכת גילוי אש וכריזת חירום', num:'81.05', items:[
+  {name:'מערכת גילוי אש וכריזת חירום', num:'81.05', note:'מחיר הציוד כולל אספקה והתקנה מלאה וחיבור לרכזת ג"א טלפייר חדשה, התקנה ע"י קבלן מורשה טלפייר ומוסמך מכון התקנים. העבודות כוללות בדיקות מכון התקנים מספר פעמים כי הפרויקט יבוצע בשלבים.', items:[
     {id:'81.05.002',num:'02.81.05.002',desc:'גלאי אש פוטו אלקטרי ממוען אנלוגי למערכת גילוי אש "טלפייר"',unit:'יח\'',est:3},
     {id:'81.05.003',num:'02.81.05.003',desc:'לחצן אזעקת אש',unit:'יח\'',est:1},
     {id:'81.05.004',num:'02.81.05.004',desc:'מנורת סימון לגלאי אש',unit:'יח\'',est:2},
@@ -505,7 +562,7 @@ const SECTIONS_S1 = [
 
 // Sheet 2 sections (room 204)
 const SECTIONS_S2 = [
-  {name:'נקודות', num:'83.01', items:[
+  {name:'נקודות', num:'83.01', note:'בכל הנקודות להלן שנדרש לבצע בצורה סמויה בקיר העבודה כוללת סיתות בקיר בטון או בלוקים, הנחת צנרת וכיסוי בבטון ע"ג הצנרת. השקעים יסופקו בהתאם לפי רוט: לבן-רגיל, כחול-UPS, אדום-גנרטור.', items:[
     {id:'83.01.002',num:'02.83.01.002',desc:'נקודת מאור',unit:'נק\'',est:75},
     {id:'83.01.003',num:'02.83.01.003',desc:'תוספת למחיר נקודת מאור עבור מפסק מחליף',unit:'יח\'',est:4},
     {id:'83.01.004',num:'02.83.01.004',desc:'נקודת מקבץ שקעים לחשמל ולתקשורת הכוללת: 4 שקעי חשמל בצבעים שונים (לבן, כחול, אדום) כולל נקודת ח"ק 16A מלאה למקבץ, הכנה ל-2 נקודות תקשורת ע"י שתי צינורות 25 מ"מ ממגש כבלים לתקשורת, לרבות 2 כיסויי דמה. קופסת "אופיס ניסקו" להתקנה גלויה או סמויה',unit:'נק\'',est:1},
@@ -538,7 +595,7 @@ const SECTIONS_S2 = [
     {id:'83.01.031',num:'02.83.01.031',desc:'נקודת הזנה חד פאזית 1X20A למנדף, בכבל 3X4 N2XY בצינור 25 מ"מ כבה מאליו',unit:'נק\'',est:2},
     {id:'83.01.032',num:'02.83.01.032',desc:'נקודת הזנה תלת פאזית 3X16A למנדף, בכבל 5X2.5 N2XY בצינור 25 מ"מ כבה מאליו',unit:'נק\'',est:5},
   ]},
-  {name:'גופי תאורה', num:'83.02', items:[
+  {name:'גופי תאורה', num:'83.02', note:'כל גופי התאורה מבוססי LED יסופקו עם אחריות 5 שנים לפחות, תקן מת"י, אורך חיים 50,000 שעות לפי LM-80, גוון CCT=4000K, דרייבר בתקן CB/TUV, עיגון כפול לתקרת בטון. בחדרים 1002 ו-2204 יסופקו ג"ת מתאימים לחדר נקי CLASS 1,000 / CLASS 10,000.', items:[
     {id:'83.02.002',num:'02.83.02.002',desc:'ג"ת לד בהספד עד 40W באורך 118 ס"מ, עשוי מפוליקרבונט משוריין IP65, דרייבר איכותי תוצרת אוסרם, שטף אור חלבי 3000 לומן, גוון אור 4000K. דגם "לשם לד ישראלוקס" או סילייט געש תאורה',unit:'יח\'',est:2},
     {id:'83.02.003',num:'02.83.02.003',desc:'ג"ת שלט יציאה חד תכליתי (כבוי במצב שגרה) מאלומניום מלוטש עם 6 נורות לד, זמן עבודה 90 דקות, עוצמת תאורה 60%, שילוט "יציאה" וסימון חץ אלקטרולייט. מאושרי מכון התקנים לת"י 20 חלק 2.22',unit:'יח\'',est:8},
     {id:'83.02.004',num:'02.83.02.004',desc:'ג"ת חירום חד תכליתי לתאורת התמצאות, נורות לד, תפוקה 170 לומן, זמן הארה 180 דקות, ללא התראות קוליות. סוללה נטענת ניקל מטל 2200mAh 3.6V, מבדק תקינות אינטגראלי',unit:'יח\'',est:10},
@@ -548,7 +605,7 @@ const SECTIONS_S2 = [
     {id:'83.02.008',num:'02.83.02.008',desc:'ג"ת לד 43W במידות 60X60 ס"מ, פרופיל אלומיניום צבוע לבן, שקוע בתקרה, מתאים לחדרים נקיים ISO3 IP65 CLASS 10,000, תפוקת אור 146 לומן/וואט, גוון 4000K, דגם LUG MEDUCA 2',unit:'יח\'',est:32},
     {id:'83.02.009',num:'02.83.02.009',desc:'ג"ת לד 43W במידות 60X60 ס"מ, פרופיל אלומיניום צבוע לבן, שקוע בתקרה, מתאים לחדרים נקיים ISO3 IP65 CLASS 1,000, תפוקת אור 146 לומן/וואט, גוון 4000K, דגם LUG MEDUCA 2',unit:'יח\'',est:6},
   ]},
-  {name:'אינסטלציה חשמלית', num:'83.03', items:[
+  {name:'אינסטלציה חשמלית', num:'83.03', note:'מחיר הכבלים והמוליכים כולל אספקה, השחלה בצינורות ו/או הנחה במגשי כבלים וחיבור מושלם בשתי הקצוות.', items:[
     {id:'83.03.002',num:'02.83.03.002',desc:'תעלה פלסטית מחומר כבה מאליו בצבע לבן עם מכסה, במידות 120X60 מ"מ עם מחיצת הפרדה, להתקנה על הקיר. כולל סופיות מקוריות, הסתעפויות, זויות ומחזיקי כבלים פנימיים',unit:'מ"א',est:40},
     {id:'83.03.003',num:'02.83.03.003',desc:'תעלה פלסטית IBOCO כנ"ל אך במידות 60X40 מ"מ',unit:'מ"א',est:5},
     {id:'83.03.004',num:'02.83.03.004',desc:'מגש רשת לכבלים מגולוון גלוון קר במידות 20X8.5 ס"מ, מותקן על הקיר ו/או מתחת לתקרה, באמצעות קונזולות, מתלים וחיזוקים תעשייתיים, מרחקים כל 1.5 מטר לפחות',unit:'מ"א',est:100},
@@ -578,7 +635,7 @@ const SECTIONS_S2 = [
     {id:'83.03.028',num:'02.83.03.028',desc:'סולם כבלים ברוחב 60 ס"מ בגובה 10 ס"מ מגולוון, מותקן ע"ג קונזולות לקיר או לתקרה',unit:'מ"א',est:5},
     {id:'83.03.029',num:'02.83.03.029',desc:'צופר אתראה קולי עם נצנץ אדום מהבהב, כולל סוללת גיבוי נטענת ל-48 שעות, מוזן ממעגל רגיל',unit:'יח\'',est:1},
   ]},
-  {name:'לוחות חשמל מעבדה', num:'83.04', items:[
+  {name:'לוחות חשמל מעבדה', num:'83.04', note:'כל לוחות החשמל בפרויקט יבנו במפעל לוחות מאושר תקן 61439 כולל אישור בדיקת בכתב של מכון התקנים. הציוד יהיה תוצרת שניידר אלקטריק, EATON, ABB או אחר שיאושר בכתב מראש ע"י מהנדס חשמל האוניברסיטה.', items:[
     {id:'83.04.002',num:'02.83.04.002',desc:'מפסק זרם חצי אוטומטי (ברקר) עד 3X100A עם הגנות טרמיות ומגנטיות, כושר ניתוק 25KA, דוגמת NSX100B שניידר. מגע עזר לחיווי מצב מפסק לבקרה',unit:'יח\'',est:3},
     {id:'83.04.003',num:'02.83.04.003',desc:'סליל הפסקה למפסק זרם ח"א עד 3X100A',unit:'יח\'',est:4},
     {id:'83.04.004',num:'02.83.04.004',desc:'סליל הפסקה למאמ"ת עד 3X63A',unit:'יח\'',est:2},
@@ -609,7 +666,7 @@ const SECTIONS_S2 = [
     {id:'83.04.029',num:'02.83.04.029',desc:'מבנה לוח חשמל ראשי מס\' 14 מעבדות מפלס 0 אגף צפון, מחולק ל-3 שדות: בלתי חיוני, גנרטור ושדה UPS. מפח קדופריט מגולוון צבוע בתנור. כולל פסי צבירה עד 4x100A, מהדקים, פסי אפס והארקה, חיווט, שילוט. מחיר לפי שטח חזית נטו במ"ר',unit:'מ"ר',est:4.5},
     {id:'83.04.030',num:'02.83.04.030',desc:'מבנה לוח חשמל מס\' 21 מעבדת ד"ר נטע שלו קומה 2 אגף דרום, בלתי חיוני, עם פאנלים פנימיים ודלתות. מפח קדופריט מגולוון צבוע בתנור. כולל פסי צבירה עד 4x100A, מהדקים, פסי אפס והארקה, חיווט, שילוט. מחיר לפי שטח חזית נטו במ"ר',unit:'מ"ר',est:2.5},
   ]},
-  {name:'מערכת גילוי אש וכריזת חירום', num:'83.05', items:[
+  {name:'מערכת גילוי אש וכריזת חירום', num:'83.05', note:'מחיר הציוד כולל אספקה והתקנה מלאה וחיבור לרכזת ג"א טלפייר חדשה, התקנה ע"י קבלן מורשה טלפייר ומוסמך מכון התקנים. העבודות כוללות בדיקות מכון התקנים מספר פעמים כי הפרויקט יבוצע בשלבים.', items:[
     {id:'83.05.002',num:'02.83.05.002',desc:'גלאי אש פוטו אלקטרי ממוען אנלוגי למערכת גילוי אש "טלפייר"',unit:'יח\'',est:16},
     {id:'83.05.003',num:'02.83.05.003',desc:'גלאי עשן לתעלת מיזוג אוויר לרכזת ממוענת טלפייר, כולל התקנה מושלמת בתעלה',unit:'יח\'',est:3},
     {id:'83.05.004',num:'02.83.05.004',desc:'צופר אזעקת אש להתקנה פנימית, אור קולי עם נצנץ',unit:'יח\'',est:2},
@@ -702,7 +759,7 @@ const SECTIONS_S3 = [
 ];
 
 // ========== STATE ==========
-let state = {project:'',month:'',phone:'',foreman:'',projectType:'p1',currentRoom:null,data:{}};
+let state = {project:'',month:'',phone:'',foreman:'',projectType:'p1',currentRoom:null,data:{},signs:{}};
 // data[roomId][itemId] = {qty:0, notes:''}
 
 // ========== PROJECT 2: מאיץ מרכז אנרגיה ==========
@@ -713,7 +770,7 @@ const ROOMS_P2 = [
 ];
 
 const SECTIONS_P2 = [
-  {name:'נקודות', num:'01.08.01', items:[
+  {name:'נקודות', num:'01.08.01', note:'בכל הנקודות להלן שנדרש לבצע בצורה סמויה בקיר העבודה כוללת סיתות בקיר בטון או בלוקים, הנחת צנרת וכיסוי בבטון ע"ג הצנרת. השקעים יסופקו לפי רוט: לבן-רגיל, כחול-UPS, אדום-גנרטור.', items:[
     {id:'p2_01_002',num:'01.08.01.002',desc:'נקודת מאור',unit:'נק\'',est:18},
     {id:'p2_01_003',num:'01.08.01.003',desc:'תוספת למחיר נקודת מאור עבור מפסק מחליף',unit:'יח\'',est:2},
     {id:'p2_01_004',num:'01.08.01.004',desc:'נקודת מקבץ שקעים לחשמל ולתקשורת (4 שקעי חשמל + הכנה ל-4 תקשורת, קופסת "אופיס ניסקו")',unit:'נק\'',est:2},
@@ -736,12 +793,12 @@ const SECTIONS_P2 = [
     {id:'p2_01_023',num:'01.08.01.023',desc:'נקודת חיבור מוליך הארקה לצנרת מתכתית - שלת הארקה עד 3"',unit:'יח\'',est:1},
     {id:'p2_01_024',num:'01.08.01.024',desc:'נקודת הזנה מסוככת למפוח מנדף בגג - כבל 5X2.5 ממ"ר מסוכך בצינור 32 מ"מ',unit:'נק\'',est:1},
   ]},
-  {name:'גופי תאורה', num:'01.08.02', items:[
+  {name:'גופי תאורה', num:'01.08.02', note:'כל גופי התאורה מבוססי LED יסופקו עם אחריות 5 שנים לפחות, תקן מת"י, אורך חיים 50,000 שעות לפי LM-80, גוון CCT=4000K, דרייבר בתקן CB/TUV, עיגון כפול לתקרת בטון. בחדר דגמים יסופקו ג"ת מתאימים לחדר נקי CLASS 10,000.', items:[
     {id:'p2_02_002',num:'01.08.02.002',desc:'ג"ת פנל לד 40W, 30X120X5 ס"מ, 4000LM, הגנה P40 - פיליפס/עין השופט',unit:'יח\'',est:14},
     {id:'p2_02_004',num:'01.08.02.004',desc:'ג"ת שלט יציאה חד תכליתי LED - 90 דקות, EL622LED / אנלטק XY-VEX',unit:'יח\'',est:2},
     {id:'p2_02_005',num:'01.08.02.005',desc:'ג"ת חירום חד תכליתי LED - 170 לומן, 180 דקות, 2200mAh',unit:'יח\'',est:2},
   ]},
-  {name:'אינסטלציה חשמלית', num:'01.08.03', items:[
+  {name:'אינסטלציה חשמלית', num:'01.08.03', note:'מחיר הכבלים והמוליכים כולל אספקה, השחלה בצינורות ו/או הנחה במגשי כבלים וחיבור מושלם בשתי הקצוות.', items:[
     {id:'p2_03_002',num:'01.08.03.002',desc:'תעלה פלסטית 120X60 מ"מ עם מחיצה - IBOCO (ישראלוקס)',unit:'מ"א',est:8.67},
     {id:'p2_03_003',num:'01.08.03.003',desc:'תעלה פלסטית 60X40 מ"מ עם מחיצה - IBOCO (ישראלוקס)',unit:'מ"א',est:5},
     {id:'p2_03_004',num:'01.08.03.004',desc:'מגש רשת כבלים מגולוון 20X8.5 ס"מ - קונזולות MFK/ליירד',unit:'מ"א',est:10},
@@ -757,7 +814,7 @@ const SECTIONS_P2 = [
     {id:'p2_03_014',num:'01.08.03.014',desc:'פס הארקה נחושת 40X4 מ"מ ע"ג מבודדים, 30 ס"מ לפחות',unit:'קומפלט',est:2},
     {id:'p2_03_015',num:'01.08.03.015',desc:'איטום פתחים לכבלים - עמידות אש 2 שעות, FS 1900 אבצום',unit:'מ"ר',est:0.5},
   ]},
-  {name:'לוח חשמל מעבדה', num:'01.08.04', items:[
+  {name:'לוח חשמל מעבדה', num:'01.08.04', note:'לוח חשמל מעבדה יותקן על קיר הכניסה למעבדה ויחובר ללוח חשמל קומתי קיים. מפסק ראשי יותקן ליד לוח קומתי בקופסת CI.', items:[
     {id:'p2_04_002',num:'01.08.04.002',desc:'מפסק זרם תלת פאזי 15KA 3X63A - ABB, בקופסת CI',unit:'יח\'',est:1},
     {id:'p2_04_003',num:'01.08.04.003',desc:'מפסק זרם תלת פאזי 15KA 3X63A - ABB, תקן IEC898',unit:'יח\'',est:1},
     {id:'p2_04_004',num:'01.08.04.004',desc:'מאמ"ת תלת פאזי 3X16A עד 10KA 3X25A - IEC898',unit:'יח\'',est:8},
@@ -773,7 +830,7 @@ const SECTIONS_P2 = [
     {id:'p2_04_014',num:'01.08.04.014',desc:'לחצן הפסקת חשמל חרום בחזית לוח - פטריה ננעל + כיסוי "קלפה"',unit:'יח\'',est:1},
     {id:'p2_04_015',num:'01.08.04.015',desc:'מבנה לוח חשמל ראשי מעבדה - פח קדופריט, פסי 4x100A, עד 80 ס"מ',unit:'קומפלט',est:1},
   ]},
-  {name:'מערכת גילוי אש', num:'01.08.05', items:[
+  {name:'מערכת גילוי אש', num:'01.08.05', note:'מחיר הציוד כולל אספקה והתקנה מלאה וחיבור לרכזת ג"א טלפייר קיימת.', items:[
     {id:'p2_05_002',num:'01.08.05.002',desc:'גלאי אש פוטו אלקטרי אנלוגי - "טלפייר"',unit:'יח\'',est:3},
     {id:'p2_05_003',num:'01.08.05.003',desc:'צופר אזעקת אש אור קולי עם נצנץ',unit:'יח\'',est:1},
     {id:'p2_05_004',num:'01.08.05.004',desc:'לחצן אזעקת אש',unit:'יח\'',est:1},
@@ -784,15 +841,96 @@ const SECTIONS_P2 = [
   ]},
 ];
 
+const ROOMS_P3 = [
+  {id:'p3_3226', name:'חדר 3226', floor:'בניין 3 קומה 2', type:'', sheet:5, icon:'🏥'},
+  {id:'p3_3226a', name:'חדר 3226A', floor:'בניין 3 קומה 2', type:'', sheet:5, icon:'🏥'},
+  {id:'p3_4201', name:'חדר 4201', floor:'בניין 4 קומה 2', type:'', sheet:5, icon:'🏥'},
+  {id:'p3_4206', name:'חדר 4206', floor:'בניין 4 קומה 2', type:'', sheet:5, icon:'🏥'},
+];
+
+const SECTIONS_P3 = [
+  {name:'נקודות', num:'01.08.01', note:'בכל הנקודות להלן שנדרש לבצע בצורה סמויה בקיר העבודה כוללת סיתות בקיר בטון או בלוקים, הנחת צנרת וכיסוי בבטון ע"ג הצנרת. השקעים יסופקו לפי רוט: לבן-רגיל, כחול-UPS, אדום-גנרטור.', items:[
+    {id:'p3_01_002',num:'01.08.01.002',desc:'נקודת מאור',unit:'נק\'',est:15},
+    {id:'p3_01_003',num:'01.08.01.003',desc:'תוספת: מפסק מחליף לנקודת מאור',unit:'יח\'',est:6},
+    {id:'p3_01_004',num:'01.08.01.004',desc:'נקודת מקבץ שקעים (4 שקעי חשמל + הכנה ל-4 תקשורת)',unit:'נק\'',est:10},
+    {id:'p3_01_005',num:'01.08.01.005',desc:'נקודת חיבור קיר 16A',unit:'נק\'',est:30},
+    {id:'p3_01_006',num:'01.08.01.006',desc:'תוספת: בית תקע בודד מוגן מים',unit:'יח\'',est:2},
+    {id:'p3_01_007',num:'01.08.01.007',desc:'תוספת: בית תקע כפול מוגן מים',unit:'יח\'',est:1},
+    {id:'p3_01_008',num:'01.08.01.008',desc:'נקודת חיבור קיר 16A — אביזר כפול (2 שקעים)',unit:'נק\'',est:40},
+    {id:'p3_01_009',num:'01.08.01.009',desc:'נקודת חיבור קיר 16A — אביזר כפול (3 שקעים)',unit:'נק\'',est:2},
+    {id:'p3_01_010',num:'01.08.01.010',desc:'נקודת חיבור קיר 16A — אביזר N4 (4 שקעים)',unit:'נק\'',est:4},
+    {id:'p3_01_011',num:'01.08.01.011',desc:'נקודת מפסק הדלקה/כיבוי תאורה מרכזי',unit:'נק\'',est:1},
+    {id:'p3_01_012',num:'01.08.01.012',desc:'נקודת לחצן הפסקת חשמל חרום',unit:'נק\'',est:2},
+    {id:'p3_01_013',num:'01.08.01.013',desc:'נקודת חיבור הארקה — נחושת חשוף 6 ממ"ר',unit:'יח\'',est:10},
+    {id:'p3_01_014',num:'01.08.01.014',desc:'נקודת חיבור הארקה — נחושת חשוף 10 ממ"ר',unit:'יח\'',est:15},
+    {id:'p3_01_015',num:'01.08.01.015',desc:'נקודת חיבור הארקה — נחושת חשוף 16 ממ"ר',unit:'נק\'',est:8},
+    {id:'p3_01_016',num:'01.08.01.016',desc:'נקודת הכנה לבקרת ציוד מעבדה (סנסמוד)',unit:'נק\'',est:18},
+    {id:'p3_01_017',num:'01.08.01.017',desc:'נקודת גילוי אש',unit:'נק\'',est:10},
+    {id:'p3_01_018',num:'01.08.01.018',desc:'נקודת הכנה לתקשורת אחודה בודדת',unit:'נק\'',est:15},
+    {id:'p3_01_019',num:'01.08.01.019',desc:'נקודת הכנה לתרמוסטט',unit:'יח\'',est:4},
+    {id:'p3_01_020',num:'01.08.01.020',desc:'נקודת חיבור מוליך הארקה לצנרת מתכתית',unit:'יח\'',est:1},
+    {id:'p3_01_021',num:'01.08.01.021',desc:'נקודת הכנה HDMI',unit:'נק\'',est:2},
+  ]},
+  {name:'גופי תאורה', num:'01.08.02', note:'כל גופי התאורה מבוססי LED יסופקו עם אחריות 5 שנים לפחות, תקן מת"י, אורך חיים 50,000 שעות לפי LM-80, גוון CCT=4000K, דרייבר בתקן CB/TUV, עיגון כפול לתקרת בטון. בחדר דגמים יסופקו ג"ת מתאימים לחדר נקי CLASS 10,000.', items:[
+    {id:'p3_02_002',num:'01.08.02.002',desc:'ג"ת פנל לד 36W',unit:'יח\'',est:45},
+    {id:'p3_02_003',num:'01.08.02.003',desc:'ג"ת שלט יציאה חד-תכליתי',unit:'יח\'',est:1},
+    {id:'p3_02_004',num:'01.08.02.004',desc:'ג"ת חירום חד-תכליתי',unit:'יח\'',est:8},
+    {id:'p3_02_005',num:'01.08.02.005',desc:'ג"ת נסתר לשולחנות — סרט לד',unit:'מ"א',est:28},
+  ]},
+  {name:'אינסטלציה חשמלית', num:'02.08.03', note:'מחיר הכבלים והמוליכים כולל אספקה, השחלה בצינורות ו/או הנחה במגשי כבלים וחיבור מושלם בשתי הקצוות.', items:[
+    {id:'p3_03_001',num:'02.08.03.001',desc:'תעלה פלסטית 135×60 מ"מ IBOCO',unit:'מ"א',est:33},
+    {id:'p3_03_002',num:'02.08.03.002',desc:'תעלה פלסטית 60×40 מ"מ IBOCO',unit:'מ"א',est:10},
+    {id:'p3_03_003',num:'02.08.03.003',desc:'מגש רשת לכבלים מגולוון',unit:'מ"א',est:40},
+    {id:'p3_03_004',num:'02.08.03.004',desc:'צינור מריכף/מרירון 20 מ"מ',unit:'מ"א',est:30},
+    {id:'p3_03_005',num:'02.08.03.005',desc:'צינור מריכף/מרירון 25 מ"מ',unit:'מ"א',est:50},
+    {id:'p3_03_006',num:'02.08.03.006',desc:'צינור מריכף/מרירון 32 מ"מ',unit:'מ"א',est:30},
+    {id:'p3_03_007',num:'02.08.03.007',desc:'צינור שרשורי "קוברה" ⌀50 מ"מ',unit:'מ"א',est:25},
+    {id:'p3_03_008',num:'02.08.03.008',desc:'כבל נחושת 5×2.5 N2XY',unit:'מ"א',est:20},
+    {id:'p3_03_009',num:'02.08.03.009',desc:'מוליך נחושת 16 ממ"ר מבודד',unit:'מ"א',est:10},
+    {id:'p3_03_010',num:'02.08.03.010',desc:'מוליך נחושת 10 ממ"ר שזור חשוף',unit:'מ"א',est:20},
+    {id:'p3_03_011',num:'02.08.03.011',desc:'חיבור מוליך הארקה לצנרת מתכתית',unit:'יח\'',est:1},
+    {id:'p3_03_012',num:'02.08.03.012',desc:'פס הארקה נחושת',unit:'קומפלט',est:1},
+    {id:'p3_03_013',num:'02.08.03.013',desc:'איטום פתחים',unit:'מ"ר',est:0.5},
+    {id:'p3_03_014',num:'02.08.03.014',desc:'שעת עבודה — חשמלאי מקצועי חווט לוחות',unit:'שעה',est:5},
+    {id:'p3_03_015',num:'02.08.03.015',desc:'שעת עבודה — חשמלאי מוסמך',unit:'שעה',est:5},
+    {id:'p3_03_016',num:'02.08.03.016',desc:'שעת עבודה — חשמלאי עוזר',unit:'שעה',est:5},
+  ]},
+  {name:'לוח חשמל מעבדה', num:'01.08.04', note:'תוספת ציוד בלוחות קיימים יהיה דוגמת הקיים, תוצרת ABB, מהסוג הקיים כבר בלוחות.', items:[
+    {id:'p3_04_002',num:'01.08.04.002',desc:'מאמ"ת תלת-פאזי 3×32A',unit:'יח\'',est:2},
+    {id:'p3_04_003',num:'01.08.04.003',desc:'מאמ"ת תלת-פאזי 3×16A',unit:'יח\'',est:2},
+    {id:'p3_04_004',num:'01.08.04.004',desc:'מאמ"ת תלת-פאזי 3×6A',unit:'יח\'',est:1},
+    {id:'p3_04_005',num:'01.08.04.005',desc:'מאמ"ת חד-פאזי 1×32A',unit:'יח\'',est:12},
+    {id:'p3_04_006',num:'01.08.04.006',desc:'ממסר פחת 4×40A',unit:'יח\'',est:2},
+    {id:'p3_04_007',num:'01.08.04.007',desc:'ממסר פחת 2×40A',unit:'יח\'',est:1},
+    {id:'p3_04_008',num:'01.08.04.008',desc:'מפסק בורר 10A',unit:'יח\'',est:1},
+    {id:'p3_04_009',num:'01.08.04.009',desc:'מגען AC3 3×20A',unit:'יח\'',est:2},
+    {id:'p3_04_010',num:'01.08.04.010',desc:'מנורת סימון LED',unit:'יח\'',est:3},
+    {id:'p3_04_011',num:'01.08.04.011',desc:'יחידת פיקוד ISO',unit:'יח\'',est:1},
+    {id:'p3_04_012',num:'01.08.04.012',desc:'שינויים בלוח קיים',unit:'יח\'',est:2},
+  ]},
+  {name:'מערכת גילוי אש', num:'01.08.05', note:'מחיר הציוד כולל אספקה והתקנה מלאה וחיבור לרכזת ג"א טלפייר קיימת.', items:[
+    {id:'p3_05_002',num:'01.08.05.002',desc:'גלאי אש פוטו-אלקטרי',unit:'יח\'',est:8},
+    {id:'p3_05_003',num:'01.08.05.003',desc:'צופר אזעקת אש אור-קולי',unit:'יח\'',est:1},
+    {id:'p3_05_004',num:'01.08.05.004',desc:'לחצן אזעקת אש',unit:'יח\'',est:2},
+    {id:'p3_05_005',num:'01.08.05.005',desc:'מנורת סימון לגלאי אש',unit:'יח\'',est:2},
+    {id:'p3_05_006',num:'01.08.05.006',desc:'חיבור וחיווט כל אלמנטים',unit:'קומפלט',est:1},
+    {id:'p3_05_007',num:'01.08.05.007',desc:'כבל גילוי אש 4×0.8',unit:'מ"א',est:20},
+    {id:'p3_05_008',num:'01.08.05.008',desc:'יחידת כתובת להפסקת מ"א מעבדה',unit:'יח\'',est:2},
+  ]},
+];
+
 function getSections(room){
+  if(room.sheet===5) return SECTIONS_P3;
   if(room.sheet===4) return SECTIONS_P2;
-  if(room.sheet===1) return SECTIONS_S1;
+  if(room.sheet===1) return [...SECTIONS_S1, ...SECTIONS_S3];
   if(room.sheet===3) return SECTIONS_S3;
   return SECTIONS_S2;
 }
 
 function getRooms(){
-  return state.projectType==='p2' ? ROOMS_P2 : ROOMS;
+  if(state.projectType==='p2') return ROOMS_P2;
+  if(state.projectType==='p3') return ROOMS_P3;
+  return ROOMS;
 }
 
 // ========== NAVIGATION ==========
@@ -842,16 +980,10 @@ function chooseProject(name, type){
 function onProjectInput(val){
   if(val.includes('מאיץ')||val.includes('אנרגיה')){
     state.projectType='p2';
-    document.getElementById('chip-p1').style.background='#fff';
-    document.getElementById('chip-p1').style.color='var(--dark)';
-    document.getElementById('chip-p2').style.background='var(--dark)';
-    document.getElementById('chip-p2').style.color='#fff';
+  } else if(val.includes('הדסה')||val.includes('עין כרם')||val.includes('רפואה')){
+    state.projectType='p3';
   } else {
     state.projectType='p1';
-    document.getElementById('chip-p1').style.background='var(--dark)';
-    document.getElementById('chip-p1').style.color='#fff';
-    document.getElementById('chip-p2').style.background='#fff';
-    document.getElementById('chip-p2').style.color='var(--dark)';
   }
 }
 
@@ -1083,7 +1215,7 @@ function countDoneItems(room){
 }
 
 function openRoom(roomId){
-  const room=[...ROOMS,...ROOMS_P2].find(r=>r.id===roomId);
+  const room=[...ROOMS,...ROOMS_P2,...ROOMS_P3].find(r=>r.id===roomId);
   state.currentRoom=room;
   if(!state.data[roomId]) state.data[roomId]={};
   document.getElementById('count-room-name').textContent=room.name+(room.type?' – '+room.type:'');
@@ -1115,6 +1247,14 @@ function buildItems(room){
       itemsWrap.classList.toggle('open');
     });
     block.appendChild(header);
+    if(sec.note){
+      const noteDiv=document.createElement('div');
+      noteDiv.style.cssText='padding:10px 16px 6px;font-size:12px;color:#888;line-height:1.55;border-bottom:1px solid #f0f0f0;background:#fafafa;display:none';
+      noteDiv.textContent='הערה: '+sec.note;
+      noteDiv.className='section-note';
+      block.appendChild(noteDiv);
+      header.addEventListener('click',()=>{ noteDiv.style.display=itemsWrap.classList.contains('open')?'block':'none'; });
+    }
     sec.items.forEach(it=>{
       const saved=d[it.id]||{qty:'',notes:''};
       const row=document.createElement('div');
@@ -1343,6 +1483,107 @@ function saveToStorage(){
   try{localStorage.setItem('yshechter_count',JSON.stringify(state));}catch(e){}
 }
 
+// ========== SIGNS ==========
+let signPhotoDataUrl = null;
+
+function showSigns(){
+  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם'};
+  document.getElementById('signs-title').textContent='🪧 שלטים — '+(projNames[state.projectType||'p1']||state.project);
+  document.getElementById('signs-form').style.display='none';
+  clearSignForm();
+  renderSignsList();
+  showScreen('signs');
+}
+
+function onSignPhoto(input){
+  const file=input.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    signPhotoDataUrl=e.target.result;
+    document.getElementById('sign-photo-img').src=signPhotoDataUrl;
+    document.getElementById('sign-photo-preview').style.display='block';
+    document.getElementById('sign-photo-label').innerHTML='📷 תמונה נבחרה ✓<input id="sign-photo" type="file" accept="image/*" capture="environment" style="display:none" onchange="onSignPhoto(this)">';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearSignPhoto(){
+  signPhotoDataUrl=null;
+  document.getElementById('sign-photo-preview').style.display='none';
+  document.getElementById('sign-photo-label').innerHTML='📷 צלם או בחר תמונה<input id="sign-photo" type="file" accept="image/*" capture="environment" style="display:none" onchange="onSignPhoto(this)">';
+}
+
+function clearSignForm(){
+  ['sign-name','sign-size','sign-color-text','sign-location'].forEach(id=>{
+    document.getElementById(id).value='';
+  });
+  document.getElementById('sign-color-pick').value='#ffffff';
+  clearSignPhoto();
+}
+
+function saveSign(){
+  const name=document.getElementById('sign-name').value.trim();
+  if(!name){alert('חובה לרשום שם שלט');return;}
+  const sign={
+    id: Date.now(),
+    name,
+    size: document.getElementById('sign-size').value.trim(),
+    colorText: document.getElementById('sign-color-text').value.trim(),
+    colorHex: document.getElementById('sign-color-pick').value,
+    location: document.getElementById('sign-location').value.trim(),
+    photo: signPhotoDataUrl,
+    date: new Date().toLocaleDateString('he-IL'),
+  };
+  const pt=state.projectType||'p1';
+  if(!state.signs[pt]) state.signs[pt]=[];
+  state.signs[pt].unshift(sign);
+  saveToStorage();
+  clearSignForm();
+  document.getElementById('signs-form').style.display='none';
+  renderSignsList();
+}
+
+function deleteSign(id){
+  if(!confirm('למחוק שלט זה?')) return;
+  const pt=state.projectType||'p1';
+  state.signs[pt]=(state.signs[pt]||[]).filter(s=>s.id!==id);
+  saveToStorage();
+  renderSignsList();
+}
+
+function renderSignsList(){
+  const pt=state.projectType||'p1';
+  const signs=state.signs[pt]||[];
+  const el=document.getElementById('signs-list');
+  if(!signs.length){
+    el.innerHTML='<div class="hist-empty">🪧<br><br>עדיין אין שלטים ברשימה.<br>לחץ "+ הוסף שלט" כדי להתחיל.</div>';
+    return;
+  }
+  el.innerHTML='';
+  signs.forEach(s=>{
+    const card=document.createElement('div');
+    card.style.cssText='background:#fff;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08)';
+    const colorSwatch=s.colorHex?`<span style="display:inline-block;width:16px;height:16px;border-radius:4px;background:${s.colorHex};border:1px solid #ccc;vertical-align:middle;margin-left:4px"></span>`:'';
+    card.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div style="flex:1">
+          <div style="font-size:16px;font-weight:800;color:var(--dark);margin-bottom:6px">${s.name}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+            ${s.size?`<span style="background:#f0f0f0;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700">📐 ${s.size}</span>`:''}
+            ${(s.colorText||s.colorHex!=='#ffffff')?`<span style="background:#f0f0f0;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700">${colorSwatch}${s.colorText||''}</span>`:''}
+            ${s.location?`<span style="background:#e8f4fd;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700">📍 ${s.location}</span>`:''}
+          </div>
+          <div style="font-size:11px;color:#aaa">נוסף: ${s.date}</div>
+        </div>
+        <button onclick="deleteSign(${s.id})" style="background:#fee;border:none;border-radius:8px;padding:8px 12px;color:#c0392b;font-size:18px;cursor:pointer;flex-shrink:0">🗑</button>
+      </div>
+      ${s.photo?`<img src="${s.photo}" style="width:100%;max-height:220px;object-fit:cover;border-radius:10px;margin-top:10px">`:''}
+    `;
+    el.appendChild(card);
+  });
+}
+
 // ========== HISTORY ==========
 function saveToHistory(room){
   try{
@@ -1354,6 +1595,7 @@ function saveToHistory(room){
       date: new Date().toLocaleString('he-IL'),
       ts: Date.now(),
       project: state.project,
+      projectType: state.projectType||'p1',
       foreman: state.foreman||'',
       dateLabel: state.month,
       phone: state.phone,
@@ -1430,51 +1672,80 @@ function renderHistList(hist){
     return;
   }
   el.innerHTML='';
+  // קיבוץ לפי חדר לפי סדר החדרים בפרויקט
+  const roomOrder=getRooms().map(r=>r.id);
+  const byRoom={};
   hist.forEach(e=>{
-    const entryId=String(e._fireId||e.id);
-    const div=document.createElement('div');
-    div.className='hist-entry';
-    div.style.display='flex';
-    div.style.alignItems='center';
-    div.style.gap='10px';
-    if(histSelectMode){
-      div.innerHTML=`<input type="checkbox" class="hist-cb" data-id="${entryId}" onchange="updateSelectCount()" style="width:22px;height:22px;accent-color:var(--orange);flex-shrink:0;cursor:pointer">`;
-    }
-    const info=document.createElement('div');
-    info.style.flex='1';
-    info.innerHTML=`
-      <div class="hist-date">📅 ${e.date}</div>
-      <div class="hist-project">${e.project}${e.foreman?' &nbsp;·&nbsp; 👷 '+e.foreman:''}</div>
-      <div class="hist-room">${e.roomName} – ${e.roomFloor}</div>
-      <div class="hist-stats">תאריך ספירה: ${e.dateLabel} &nbsp;|&nbsp; ${e.filled}/${e.total} סעיפים מולאו</div>
-    `;
-    if(!histSelectMode) info.onclick=()=>showHistDetail(e._fireId||e.id);
-    else info.onclick=()=>{
-      const cb=div.querySelector('.hist-cb');
-      cb.checked=!cb.checked;
-      updateSelectCount();
-    };
-    div.appendChild(info);
-    el.appendChild(div);
+    const key=e.roomId||e.roomName;
+    if(!byRoom[key]) byRoom[key]={roomName:e.roomName,roomFloor:e.roomFloor,entries:[]};
+    byRoom[key].entries.push(e);
+  });
+  // מיון: קודם לפי סדר הפרויקט, אחר כך חדרים לא מוכרים
+  const sortedKeys=[...roomOrder.filter(id=>byRoom[id]),...Object.keys(byRoom).filter(k=>!roomOrder.includes(k))];
+  sortedKeys.forEach(key=>{
+    const group=byRoom[key];
+    // כותרת חדר
+    const roomHeader=document.createElement('div');
+    roomHeader.style.cssText='background:var(--dark);color:#fff;border-radius:10px;padding:8px 14px;margin:14px 0 6px;font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px';
+    roomHeader.innerHTML=`<span>🚪</span><span>${group.roomName}</span>${group.roomFloor?`<span style="opacity:0.7;font-size:12px;font-weight:400">– ${group.roomFloor}</span>`:''}`;
+    el.appendChild(roomHeader);
+    // רשומות החדר
+    group.entries.forEach(e=>{
+      const entryId=String(e._fireId||e.id);
+      const div=document.createElement('div');
+      div.className='hist-entry';
+      div.style.display='flex';
+      div.style.alignItems='center';
+      div.style.gap='10px';
+      if(histSelectMode){
+        div.innerHTML=`<input type="checkbox" class="hist-cb" data-id="${entryId}" onchange="updateSelectCount()" style="width:22px;height:22px;accent-color:var(--orange);flex-shrink:0;cursor:pointer">`;
+      }
+      const info=document.createElement('div');
+      info.style.flex='1';
+      info.innerHTML=`
+        <div class="hist-date">📅 ${e.date}</div>
+        ${e.foreman?`<div class="hist-project">👷 ${e.foreman}</div>`:''}
+        <div class="hist-stats">תאריך ספירה: ${e.dateLabel} &nbsp;|&nbsp; ${e.filled}/${e.total} סעיפים מולאו</div>
+      `;
+      if(!histSelectMode) info.onclick=()=>showHistDetail(e._fireId||e.id);
+      else info.onclick=()=>{
+        const cb=div.querySelector('.hist-cb');
+        cb.checked=!cb.checked;
+        updateSelectCount();
+      };
+      div.appendChild(info);
+      el.appendChild(div);
+    });
+  });
+}
+
+function filterHistByProject(hist){
+  const pt=state.projectType||'p1';
+  return hist.filter(e=>{
+    const ept=e.projectType||'p1';
+    return ept===pt;
   });
 }
 
 function showHistory(){
   showScreen('history');
+  // עדכון כותרת לפי פרויקט
+  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם'};
+  document.querySelector('#screen-history .hist-wrap div[style*="font-size:18px"]').textContent='היסטוריית ספירות — '+(projNames[state.projectType||'p1']||state.project);
   const el=document.getElementById('hist-list');
   if(db){
     el.innerHTML='<div class="hist-empty">⏳ טוען...</div>';
-    db.collection('counts').orderBy('ts','desc').limit(200).get()
+    db.collection('counts').orderBy('ts','desc').limit(500).get()
       .then(snap=>{
-        const hist=snap.docs.map(d=>({...d.data(), _fireId:d.id}));
+        const hist=filterHistByProject(snap.docs.map(d=>({...d.data(), _fireId:d.id})));
         renderHistList(hist);
       })
       .catch(()=>{
-        const hist=JSON.parse(localStorage.getItem('yshechter_history')||'[]');
+        const hist=filterHistByProject(JSON.parse(localStorage.getItem('yshechter_history')||'[]'));
         renderHistList(hist);
       });
   } else {
-    const hist=JSON.parse(localStorage.getItem('yshechter_history')||'[]');
+    const hist=filterHistByProject(JSON.parse(localStorage.getItem('yshechter_history')||'[]'));
     renderHistList(hist);
   }
 }
@@ -1543,7 +1814,11 @@ async function downloadHistSummary(){
     wb.creator = 'י.שכטר חשמל';
     const white='FFFFFFFF', darkBg='FF1A1D21', orange='FFE8590C', yellow='FFFFF0AA', lightGray='FFF2F2F2';
 
-    const chapters = [
+    const chapters = state.projectType==='p2' ? [
+      {title:'פרק 08 - עבודות חשמל: בניין מאיץ מרכז אנרגיה', sheet:4},
+    ] : state.projectType==='p3' ? [
+      {title:'פרק 08 - עבודות חשמל: הדסה עין כרם בניין רפואה קומה 2', sheet:5},
+    ] : [
       {title:'פרק 081 - עבודות חשמל: מעבדות ומשרד 2308, 2309, 2216', sheet:1},
       {title:'פרק 082 - עבודות חשמל: שדרוג מערכת חשמל', sheet:3},
       {title:'פרק 083 - עבודות חשמל: מעבדות 2204, 1002 ו-1006E', sheet:2},
@@ -1706,6 +1981,8 @@ async function downloadExcel(){
 
   const chapters = state.projectType==='p2' ? [
     {title:'פרק 08 - עבודות חשמל: בניין מאיץ מרכז אנרגיה', sheet:4},
+  ] : state.projectType==='p3' ? [
+    {title:'פרק 08 - עבודות חשמל: הדסה עין כרם בניין רפואה קומה 2', sheet:5},
   ] : [
     {title:'פרק 081 - עבודות חשמל: מעבדות ומשרד 2308, 2309, 2216', sheet:1},
     {title:'פרק 082 - עבודות חשמל: שדרוג מערכת חשמל מכון למדעי כדור הארץ', sheet:3},

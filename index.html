@@ -1487,12 +1487,21 @@ function saveToStorage(){
 let signPhotoDataUrl = null;
 
 function showSigns(){
-  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם'};
-  document.getElementById('signs-title').textContent='🪧 שלטים — '+(projNames[state.projectType||'p1']||state.project);
-  document.getElementById('signs-form').style.display='none';
-  clearSignForm();
-  renderSignsList();
-  showScreen('signs');
+  try{
+    const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם'};
+    const titleEl=document.getElementById('signs-title');
+    if(titleEl) titleEl.textContent='🪧 שלטים — '+(projNames[state.projectType||'p1']||state.project);
+    const formEl=document.getElementById('signs-form');
+    if(formEl) formEl.style.display='none';
+    signPhotoDataUrl=null;
+    ['sign-name','sign-size','sign-color-text','sign-location'].forEach(id=>{
+      const el=document.getElementById(id); if(el) el.value='';
+    });
+    const cp=document.getElementById('sign-color-pick'); if(cp) cp.value='#ffffff';
+    const prev=document.getElementById('sign-photo-preview'); if(prev) prev.style.display='none';
+    renderSignsList();
+    showScreen('signs');
+  }catch(e){alert('שגיאה: '+e.message);}
 }
 
 function onSignPhoto(input){

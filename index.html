@@ -1939,6 +1939,7 @@ function loadFromStorage(){
     const saved=JSON.parse(raw);
     if(saved.project){
       state=saved;
+      if(!state.signs) state.signs={};
       document.getElementById('inp-project').value='';
       document.getElementById('inp-phone').value=saved.phone||'';
     }

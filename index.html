@@ -263,25 +263,15 @@ body{font-family:'Heebo',Arial,sans-serif;background:#eef1f4;color:#2c3e50;direc
         </div>
         <div>
           <label style="font-size:12px;font-weight:700;color:#666;display:block;margin-bottom:4px">צבע</label>
-          <div style="display:flex;gap:6px;align-items:center">
-            <input id="sign-color-text" type="text" placeholder="צבע..." style="flex:1;padding:10px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:Heebo,Arial">
-            <input id="sign-color-pick" type="color" value="#ffffff" style="width:38px;height:38px;border:none;border-radius:8px;cursor:pointer;padding:2px">
-          </div>
+          <input id="sign-color-text" type="text" placeholder="צבע..." style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:Heebo,Arial;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:12px;font-weight:700;color:#666;display:block;margin-bottom:4px">כמות</label>
+          <input id="sign-qty" type="number" min="1" placeholder="1" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:Heebo,Arial;box-sizing:border-box">
         </div>
         <div>
           <label style="font-size:12px;font-weight:700;color:#666;display:block;margin-bottom:4px">חדר / מיקום</label>
           <input id="sign-location" type="text" placeholder="חדר / מיקום..." style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);font-size:14px;font-family:Heebo,Arial;box-sizing:border-box">
-        </div>
-      </div>
-      <div style="margin-bottom:12px">
-        <label style="font-size:12px;font-weight:700;color:#666;display:block;margin-bottom:4px">תמונה</label>
-        <label id="sign-photo-label" style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:8px;border:1.5px dashed var(--border);cursor:pointer;font-size:14px;color:#555;font-family:Heebo,Arial">
-          📷 צלם או בחר תמונה
-          <input id="sign-photo" type="file" accept="image/*" capture="environment" style="display:none" onchange="onSignPhoto(this)">
-        </label>
-        <div id="sign-photo-preview" style="margin-top:8px;display:none">
-          <img id="sign-photo-img" style="max-width:100%;max-height:180px;border-radius:10px;object-fit:cover">
-          <button onclick="clearSignPhoto()" style="display:block;margin-top:6px;background:#eee;border:none;border-radius:6px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:Heebo,Arial">✕ הסר תמונה</button>
         </div>
       </div>
       <div style="display:flex;gap:10px">
@@ -347,7 +337,8 @@ body{font-family:'Heebo',Arial,sans-serif;background:#eef1f4;color:#2c3e50;direc
     <div id="hist-select-bar" style="display:none;background:#fff3cd;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:none;align-items:center;gap:10px">
       <span id="hist-select-count" style="font-size:14px;font-weight:700;flex:1">0 נבחרו</span>
       <button onclick="selectAllHist()" style="background:#4a6278;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">בחר הכל</button>
-      <button onclick="deleteSelectedHist()" style="background:#E8590C;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">🗑 מחק נבחרים</button>
+      <button onclick="downloadSelectedHist()" style="background:#27ae60;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">📊 הורד</button>
+      <button onclick="deleteSelectedHist()" style="background:#E8590C;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">🗑 מחק</button>
     </div>
     <div id="hist-list"></div>
   </div>
@@ -1523,6 +1514,7 @@ function buildSignsText(){
   signs.forEach((s,i)=>{
     txt+=`${i+1}. *${s.name}*\n`;
     if(s.size) txt+=`   📐 גודל: ${s.size}\n`;
+    if(s.qty&&s.qty!=='1') txt+=`   × כמות: ${s.qty}\n`;
     if(s.colorText) txt+=`   🎨 צבע: ${s.colorText}\n`;
     if(s.location) txt+=`   📍 מיקום: ${s.location}\n`;
     txt+=`\n`;
@@ -1575,7 +1567,6 @@ function saveToStorage(){
 }
 
 // ========== SIGNS ==========
-let signPhotoDataUrl = null;
 
 function showSigns(){
   try{
@@ -1584,42 +1575,18 @@ function showSigns(){
     if(titleEl) titleEl.textContent='🪧 שלטים — '+(projNames[state.projectType||'p1']||state.project);
     const formEl=document.getElementById('signs-form');
     if(formEl) formEl.style.display='none';
-    signPhotoDataUrl=null;
-    ['sign-name','sign-size','sign-color-text','sign-location'].forEach(id=>{
+    ['sign-name','sign-size','sign-color-text','sign-qty','sign-location'].forEach(id=>{
       const el=document.getElementById(id); if(el) el.value='';
     });
-    const cp=document.getElementById('sign-color-pick'); if(cp) cp.value='#ffffff';
-    const prev=document.getElementById('sign-photo-preview'); if(prev) prev.style.display='none';
     renderSignsList();
     showScreen('signs');
   }catch(e){alert('שגיאה: '+e.message);}
 }
 
-function onSignPhoto(input){
-  const file=input.files[0];
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    signPhotoDataUrl=e.target.result;
-    document.getElementById('sign-photo-img').src=signPhotoDataUrl;
-    document.getElementById('sign-photo-preview').style.display='block';
-    document.getElementById('sign-photo-label').innerHTML='📷 תמונה נבחרה ✓<input id="sign-photo" type="file" accept="image/*" capture="environment" style="display:none" onchange="onSignPhoto(this)">';
-  };
-  reader.readAsDataURL(file);
-}
-
-function clearSignPhoto(){
-  signPhotoDataUrl=null;
-  document.getElementById('sign-photo-preview').style.display='none';
-  document.getElementById('sign-photo-label').innerHTML='📷 צלם או בחר תמונה<input id="sign-photo" type="file" accept="image/*" capture="environment" style="display:none" onchange="onSignPhoto(this)">';
-}
-
 function clearSignForm(){
-  ['sign-name','sign-size','sign-color-text','sign-location'].forEach(id=>{
+  ['sign-name','sign-size','sign-color-text','sign-qty','sign-location'].forEach(id=>{
     document.getElementById(id).value='';
   });
-  document.getElementById('sign-color-pick').value='#ffffff';
-  clearSignPhoto();
 }
 
 function saveSign(){
@@ -1630,9 +1597,9 @@ function saveSign(){
     name,
     size: document.getElementById('sign-size').value.trim(),
     colorText: document.getElementById('sign-color-text').value.trim(),
-    colorHex: document.getElementById('sign-color-pick').value,
+    qty: document.getElementById('sign-qty').value.trim()||'1',
     location: document.getElementById('sign-location').value.trim(),
-    photo: signPhotoDataUrl,
+
     date: new Date().toLocaleDateString('he-IL'),
   };
   const pt=state.projectType||'p1';
@@ -1668,21 +1635,21 @@ function renderSignsList(){
   signs.forEach(s=>{
     const card=document.createElement('div');
     card.style.cssText='background:#fff;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08)';
-    const colorSwatch=s.colorHex?`<span style="display:inline-block;width:16px;height:16px;border-radius:4px;background:${s.colorHex};border:1px solid #ccc;vertical-align:middle;margin-left:4px"></span>`:'';
     card.innerHTML=`
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
         <div style="flex:1">
           <div style="font-size:16px;font-weight:800;color:var(--dark);margin-bottom:6px">${s.name}</div>
           <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">
+            ${s.qty?`<span style="background:#e8f5e9;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700">× ${s.qty}</span>`:''}
             ${s.size?`<span style="background:#f0f0f0;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700">📐 ${s.size}</span>`:''}
-            ${(s.colorText||s.colorHex!=='#ffffff')?`<span style="background:#f0f0f0;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700">${colorSwatch}${s.colorText||''}</span>`:''}
+            ${s.colorText?`<span style="background:#f0f0f0;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700">🎨 ${s.colorText}</span>`:''}
             ${s.location?`<span style="background:#e8f4fd;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:700">📍 ${s.location}</span>`:''}
           </div>
           <div style="font-size:11px;color:#aaa">נוסף: ${s.date}</div>
         </div>
         <button onclick="deleteSign(${s.id})" style="background:#fee;border:none;border-radius:8px;padding:8px 12px;color:#c0392b;font-size:18px;cursor:pointer;flex-shrink:0">🗑</button>
       </div>
-      ${s.photo?`<img src="${s.photo}" style="width:100%;max-height:220px;object-fit:cover;border-radius:10px;margin-top:10px">`:''}
+
     `;
     el.appendChild(card);
   });
@@ -1737,26 +1704,44 @@ async function downloadSelectedSigns(){
   try{
     const wb=new ExcelJS.Workbook();
     wb.creator='י.שכטר חשמל';
-    const orange='FFE8590C',dark='FF1A1D21',lightGray='FFF2F2F2',white='FFFFFFFF';
-    selected.forEach((entry,ei)=>{
-      const sheetName=`${entry.foreman||'רשימה'} ${ei+1}`.slice(0,31);
-      const ws=wb.addWorksheet(sheetName,{views:[{rightToLeft:true}]});
-      ws.mergeCells(1,1,1,5);
-      const t=ws.getRow(1).getCell(1);
-      t.value=`${entry.project||''}${entry.foreman?' – '+entry.foreman:''} – ${entry.date||''}`;
-      t.font={bold:true,color:{argb:white},name:'Arial',size:13};
-      t.fill={type:'pattern',pattern:'solid',fgColor:{argb:orange}};
-      t.alignment={horizontal:'center',vertical:'middle'};
-      ws.getRow(1).height=28;
-      const hr=ws.addRow(['#','שם שלט','גודל','צבע','מיקום']);
-      hr.height=22;
-      hr.eachCell(c=>{c.font={bold:true,color:{argb:white},name:'Arial',size:11};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:dark}};c.alignment={horizontal:'center',vertical:'middle'};});
-      ws.columns=[{width:5},{width:30},{width:15},{width:15},{width:20}];
+    const orange='FFE8590C',dark='FF1A1D21',lightGray='FFF2F2F2',white='FFFFFFFF',blue='FF1A3A5C';
+    const ws=wb.addWorksheet('רשימת שלטים',{views:[{rightToLeft:true}]});
+    ws.columns=[{width:5},{width:30},{width:15},{width:15},{width:20},{width:20},{width:14}];
+    // כותרת ראשית
+    ws.mergeCells(1,1,1,7);
+    const main=ws.getRow(1).getCell(1);
+    main.value=`רשימת שלטים – ${selected[0]?.project||''}`;
+    main.font={bold:true,color:{argb:white},name:'Arial',size:14};
+    main.fill={type:'pattern',pattern:'solid',fgColor:{argb:orange}};
+    main.alignment={horizontal:'center',vertical:'middle'};
+    ws.getRow(1).height=30;
+    let rowIdx=2;
+    let globalIdx=1;
+    selected.forEach((entry)=>{
+      // שורת כותרת לכל רשימה
+      ws.mergeCells(rowIdx,1,rowIdx,7);
+      const gr=ws.getRow(rowIdx).getCell(1);
+      gr.value=`${entry.foreman||'ללא שם'} — ${entry.date||''}`;
+      gr.font={bold:true,color:{argb:white},name:'Arial',size:11};
+      gr.fill={type:'pattern',pattern:'solid',fgColor:{argb:blue}};
+      gr.alignment={horizontal:'right',vertical:'middle'};
+      ws.getRow(rowIdx).height=22;
+      rowIdx++;
+      // כותרות עמודות
+      const hr=ws.addRow(['#','שם שלט','כמות','גודל','צבע','מיקום','']);
+      hr.height=20;
+      hr.eachCell((c,ci)=>{if(ci<=6){c.font={bold:true,color:{argb:white},name:'Arial',size:10};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:dark}};c.alignment={horizontal:'center',vertical:'middle'};}});
+      rowIdx++;
+      // פריטים
       (entry.signs||[]).forEach((s,i)=>{
-        const row=ws.addRow([i+1,s.name,s.size||'',s.colorText||'',s.location||'']);
+        const row=ws.addRow([globalIdx++,s.name,s.qty||'1',s.size||'',s.colorText||'',s.location||'','']);
         row.height=20;
-        row.eachCell(c=>{c.font={name:'Arial',size:10};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:i%2===0?lightGray:white}};c.alignment={horizontal:'right',vertical:'middle'};});
+        row.eachCell((c,ci)=>{if(ci<=5){c.font={name:'Arial',size:10};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:i%2===0?lightGray:white}};c.alignment={horizontal:'right',vertical:'middle'};}});
+        rowIdx++;
       });
+      // רווח בין רשימות
+      ws.addRow([]);
+      rowIdx++;
     });
     const buf=await wb.xlsx.writeBuffer();
     const url=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
@@ -1828,12 +1813,12 @@ async function downloadSignsExcelFromEntry(entry){
     t.fill={type:'pattern',pattern:'solid',fgColor:{argb:orange}};
     t.alignment={horizontal:'center',vertical:'middle'};
     ws.getRow(1).height=28;
-    const hr=ws.addRow(['#','שם שלט','גודל','צבע','מיקום','תאריך']);
+    const hr=ws.addRow(['#','שם שלט','כמות','גודל','צבע','מיקום','תאריך']);
     hr.height=22;
     hr.eachCell(c=>{c.font={bold:true,color:{argb:white},name:'Arial',size:11};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:dark}};c.alignment={horizontal:'center',vertical:'middle'};});
-    ws.columns=[{width:5},{width:30},{width:15},{width:15},{width:20},{width:14}];
+    ws.columns=[{width:5},{width:30},{width:8},{width:15},{width:15},{width:20},{width:14}];
     signs.forEach((s,i)=>{
-      const row=ws.addRow([i+1,s.name,s.size||'',s.colorText||'',s.location||'',s.date||'']);
+      const row=ws.addRow([i+1,s.name,s.qty||'1',s.size||'',s.colorText||'',s.location||'',s.date||'']);
       row.height=20;
       row.eachCell(c=>{c.font={name:'Arial',size:10};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:i%2===0?lightGray:white}};c.alignment={horizontal:'right',vertical:'middle'};});
     });
@@ -1862,7 +1847,7 @@ function submitSigns(){
       projectType: pt,
       foreman,
       phone: state.phone||'',
-      signs: signs.map(s=>({name:s.name,size:s.size,colorText:s.colorText,colorHex:s.colorHex,location:s.location,date:s.date}))
+      signs: signs.map(s=>({name:s.name,size:s.size||'',colorText:s.colorText||'',qty:s.qty||'1',location:s.location||'',date:s.date||''}))
     };
     db.collection('signs').add(signsEntry).catch(()=>{});
   }
@@ -2009,6 +1994,16 @@ function updateSelectCount(){
 function selectAllHist(){
   document.querySelectorAll('.hist-cb').forEach(cb=>cb.checked=true);
   updateSelectCount();
+}
+
+async function downloadSelectedHist(){
+  const ids=new Set(Array.from(document.querySelectorAll('.hist-cb:checked')).map(cb=>cb.dataset.id));
+  if(!ids.size){alert('לא נבחרו ספירות');return;}
+  const selected=histCurrentList.filter(h=>ids.has(String(h._fireId||h.id)));
+  const prev=histCurrentList;
+  histCurrentList=selected;
+  await downloadHistSummary();
+  histCurrentList=prev;
 }
 
 function deleteSelectedHist(){

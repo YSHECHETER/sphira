@@ -285,8 +285,8 @@ body{font-family:'Heebo',Arial,sans-serif;background:#eef1f4;color:#2c3e50;direc
         </div>
       </div>
       <div style="display:flex;gap:10px">
-        <button onclick="saveSign()" style="flex:1;padding:12px;border-radius:10px;border:none;background:#7b5ea7;color:#fff;font-size:15px;font-weight:800;font-family:Heebo,Arial;cursor:pointer">✓ אישר</button>
-        <button onclick="document.getElementById('signs-form').style.display='none'" style="padding:12px 16px;border-radius:10px;border:none;background:#eee;color:#555;font-size:15px;font-weight:700;font-family:Heebo,Arial;cursor:pointer">ביטול</button>
+        <button type="button" onclick="saveSign()" style="flex:1;padding:12px;border-radius:10px;border:none;background:#7b5ea7;color:#fff;font-size:15px;font-weight:800;font-family:Heebo,Arial;cursor:pointer">✓ אישר</button>
+        <button type="button" onclick="document.getElementById('signs-form').style.display='none'" style="padding:12px 16px;border-radius:10px;border:none;background:#eee;color:#555;font-size:15px;font-weight:700;font-family:Heebo,Arial;cursor:pointer">ביטול</button>
       </div>
     </div>
 
@@ -1640,9 +1640,12 @@ function saveSign(){
   state.signs[pt].unshift(sign);
   saveToStorage();
   clearSignForm();
-  document.getElementById('signs-form').style.display='none';
+  document.getElementById('signs-form').style.display='block';
   renderSignsList();
-  showSignsSend();
+  // הודעת אישור קצרה
+  const btn=document.querySelector('#signs-form button[onclick="saveSign()"]');
+  if(btn){const orig=btn.textContent;btn.textContent='✓ נוסף!';btn.style.background='#27ae60';setTimeout(()=>{btn.textContent=orig;btn.style.background='#7b5ea7';},1500);}
+  document.getElementById('sign-name').focus();
 }
 
 function deleteSign(id){
@@ -1877,6 +1880,9 @@ function submitSigns(){
         ${s.location?` · <span style="color:#4a6278">📍${s.location}</span>`:''}
       </div>`).join('');
   }
+  // ניקוי הרשימה המקומית אחרי שליחה
+  state.signs[pt]=[];
+  saveToStorage();
   showScreen('signs-send');
 }
 

@@ -328,7 +328,8 @@ body{font-family:'Heebo',Arial,sans-serif;background:#eef1f4;color:#2c3e50;direc
     <div id="signs-select-bar" style="display:none;background:#e8f4fd;border-radius:10px;padding:10px 14px;margin-bottom:12px;align-items:center;gap:10px">
       <span id="signs-select-count" style="font-size:14px;font-weight:700;flex:1">0 נבחרו</span>
       <button onclick="selectAllSignsHist()" style="background:#4a6278;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">בחר הכל</button>
-      <button onclick="downloadSelectedSigns()" style="background:#27ae60;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">📊 הורד נבחרים</button>
+      <button onclick="downloadSelectedSigns()" style="background:#27ae60;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">📊 הורד</button>
+      <button onclick="deleteSelectedSigns()" style="background:#E8590C;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">🗑 מחק</button>
     </div>
     <div id="signs-history-list"></div>
   </div>
@@ -1703,6 +1704,26 @@ function selectAllSignsHist(){
 function updateSignsSelectCount(){
   const n=document.querySelectorAll('.sign-hist-cb:checked').length;
   document.getElementById('signs-select-count').textContent=`${n} נבחרו`;
+}
+
+async function deleteSelectedSigns(){
+  const checked=[...document.querySelectorAll('.sign-hist-cb:checked')];
+  if(!checked.length){alert('לא נבחרו רשומות');return;}
+  if(!confirm(`למחוק ${checked.length} רשומות?`)) return;
+  const indices=checked.map(cb=>parseInt(cb.dataset.idx));
+  const toDelete=indices.map(i=>signsHistEntries[i]).filter(Boolean);
+  if(db){
+    const batch=db.batch();
+    // מחיקה לפי ts כי אין לנו את ה-doc id שמור
+    for(const entry of toDelete){
+      const snap=await db.collection('signs').where('ts','==',entry.ts).get();
+      snap.docs.forEach(doc=>batch.delete(doc.ref));
+    }
+    await batch.commit().catch(err=>alert('שגיאה במחיקה: '+err.message));
+  }
+  signsHistEntries=signsHistEntries.filter((_,i)=>!indices.includes(i));
+  renderSignsHistoryList(signsHistEntries);
+  updateSignsSelectCount();
 }
 
 async function downloadSelectedSigns(){

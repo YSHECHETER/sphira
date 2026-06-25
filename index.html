@@ -285,7 +285,7 @@ body{font-family:'Heebo',Arial,sans-serif;background:#eef1f4;color:#2c3e50;direc
         </div>
       </div>
       <div style="display:flex;gap:10px">
-        <button onclick="saveSign()" style="flex:1;padding:12px;border-radius:10px;border:none;background:#7b5ea7;color:#fff;font-size:15px;font-weight:800;font-family:Heebo,Arial;cursor:pointer">+ הוסף שלט</button>
+        <button onclick="saveSign()" style="flex:1;padding:12px;border-radius:10px;border:none;background:#7b5ea7;color:#fff;font-size:15px;font-weight:800;font-family:Heebo,Arial;cursor:pointer">✓ אישר</button>
         <button onclick="document.getElementById('signs-form').style.display='none'" style="padding:12px 16px;border-radius:10px;border:none;background:#eee;color:#555;font-size:15px;font-weight:700;font-family:Heebo,Arial;cursor:pointer">ביטול</button>
       </div>
     </div>
@@ -293,6 +293,44 @@ body{font-family:'Heebo',Arial,sans-serif;background:#eef1f4;color:#2c3e50;direc
     <button onclick="document.getElementById('signs-form').style.display='block';document.getElementById('sign-name').focus()" style="width:100%;padding:13px;border-radius:12px;border:none;background:#7b5ea7;color:#fff;font-size:15px;font-weight:800;font-family:Heebo,Arial;cursor:pointer;margin-bottom:16px">+ הוסף שלט</button>
 
     <div id="signs-list"></div>
+
+    <button onclick="submitSigns()" style="width:100%;margin-top:18px;padding:15px;border-radius:12px;border:none;background:#27ae60;color:#fff;font-size:16px;font-weight:800;font-family:Heebo,Arial;cursor:pointer">✓ סיים ושלח לאישור</button>
+    <button onclick="showSignsHistory()" style="width:100%;margin-top:10px;padding:13px;border-radius:12px;border:none;background:#4a6278;color:#fff;font-size:15px;font-weight:800;font-family:Heebo,Arial;cursor:pointer">🕐 היסטוריית שלטים</button>
+  </div>
+</div>
+
+<!-- SCREEN 8: SIGNS SEND -->
+<div class="screen" id="screen-signs-send">
+  <div class="summary-wrap">
+    <div style="margin-bottom:12px">
+      <button onclick="showSigns()" style="background:var(--primary);color:#fff;border:none;border-radius:10px;padding:12px 22px;font-size:16px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer;width:100%">→ חזרה לרשימת שלטים</button>
+    </div>
+    <div class="summary-card">
+      <div class="summary-title">🪧 שליחת רשימת שלטים</div>
+      <div id="signs-send-info" class="summary-sub"></div>
+      <div id="signs-send-list" style="margin:12px 0;text-align:right"></div>
+      <button class="btn-wa" onclick="sendSignsWhatsApp()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.890-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+        שלח ל-WhatsApp
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SCREEN 9: SIGNS HISTORY -->
+<div class="screen" id="screen-signs-history">
+  <div class="hist-wrap">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <button onclick="showSigns()" style="background:var(--primary);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:15px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">→ חזרה</button>
+      <div style="font-size:18px;font-weight:800;color:var(--dark);flex:1">🕐 היסטוריית שלטים</div>
+      <button id="btn-signs-select" onclick="toggleSignsSelect()" style="background:#4a6278;color:#fff;border:none;border-radius:8px;padding:10px 14px;font-size:13px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">☑ בחר</button>
+    </div>
+    <div id="signs-select-bar" style="display:none;background:#e8f4fd;border-radius:10px;padding:10px 14px;margin-bottom:12px;align-items:center;gap:10px">
+      <span id="signs-select-count" style="font-size:14px;font-weight:700;flex:1">0 נבחרו</span>
+      <button onclick="selectAllSignsHist()" style="background:#4a6278;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">בחר הכל</button>
+      <button onclick="downloadSelectedSigns()" style="background:#27ae60;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer">📊 הורד נבחרים</button>
+    </div>
+    <div id="signs-history-list"></div>
   </div>
 </div>
 
@@ -1458,6 +1496,58 @@ function shareSummaryImage(){
   },'image/png');
 }
 
+function showSignsSend(){
+  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם'};
+  const pt=state.projectType||'p1';
+  const signs=state.signs[pt]||[];
+  document.getElementById('signs-send-info').textContent=(projNames[pt]||state.project)+' | '+new Date().toLocaleDateString('he-IL');
+  const listEl=document.getElementById('signs-send-list');
+  listEl.innerHTML=signs.map((s,i)=>`<div style="padding:8px 0;border-bottom:1px solid #eee;font-size:14px">
+    <strong>${i+1}. ${s.name}</strong>${s.size?' | '+s.size:''}${s.colorText?' | '+s.colorText:''}${s.location?' | '+s.location:''}
+  </div>`).join('');
+  showScreen('signs-send');
+}
+
+function buildSignsText(){
+  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם'};
+  const pt=state.projectType||'p1';
+  const signs=state.signs[pt]||[];
+  const now=new Date().toLocaleDateString('he-IL');
+  let txt=`🪧 *רשימת שלטים*\n`;
+  txt+=`🏢 *י.שכטר חשמל ואחזקה*\n`;
+  txt+=`━━━━━━━━━━━━━━━━━━━━━━\n`;
+  txt+=`🏗 פרויקט: *${projNames[pt]||state.project}*\n`;
+  txt+=`👷 מנהל עבודה: ${state.foreman||'—'}\n`;
+  txt+=`📅 תאריך: ${now}\n\n`;
+  signs.forEach((s,i)=>{
+    txt+=`${i+1}. *${s.name}*\n`;
+    if(s.size) txt+=`   📐 גודל: ${s.size}\n`;
+    if(s.colorText) txt+=`   🎨 צבע: ${s.colorText}\n`;
+    if(s.location) txt+=`   📍 מיקום: ${s.location}\n`;
+    txt+=`\n`;
+  });
+  return txt;
+}
+
+function sendSignsWhatsApp(){
+  const phone=state.phone.replace(/\D/g,'');
+  const text=encodeURIComponent(buildSignsText());
+  const url=phone
+    ?`https://wa.me/972${phone.replace(/^0/,'')}?text=${text}`
+    :`https://wa.me/?text=${text}`;
+  window.open(url,'_blank');
+}
+
+function sendSignsEmail(e){
+  e.preventDefault();
+  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם'};
+  const pt=state.projectType||'p1';
+  const subject=encodeURIComponent(`רשימת שלטים – ${projNames[pt]||state.project} – ${new Date().toLocaleDateString('he-IL')}`);
+  const body=encodeURIComponent(buildSignsText());
+  const to='office@yshechter.co.il,shmouel@yshechter.co.il';
+  window.open(`mailto:${to}?subject=${subject}&body=${body}`,'_self');
+}
+
 function sendWhatsApp(){
   downloadExcel().then(()=>{
     const phone=state.phone.replace(/\D/g,'');
@@ -1475,7 +1565,7 @@ function sendEmail(e){
     const subject=encodeURIComponent(`ספירת כמויות בשטח – ${state.project} – ${state.month}`);
     const body=encodeURIComponent(buildSummaryText());
     const to='office@yshechter.co.il,shmouel@yshechter.co.il';
-    window.location.href=`mailto:${to}?subject=${subject}&body=${body}`;
+    window.open(`mailto:${to}?subject=${subject}&body=${body}`,'_self');
   });
 }
 
@@ -1551,6 +1641,7 @@ function saveSign(){
   clearSignForm();
   document.getElementById('signs-form').style.display='none';
   renderSignsList();
+  showSignsSend();
 }
 
 function deleteSign(id){
@@ -1591,6 +1682,246 @@ function renderSignsList(){
     `;
     el.appendChild(card);
   });
+}
+
+let signsSelectMode=false;
+let signsHistEntries=[];
+
+function toggleSignsSelect(){
+  signsSelectMode=!signsSelectMode;
+  document.getElementById('btn-signs-select').textContent=signsSelectMode?'✕ ביטול':'☑ בחר';
+  const bar=document.getElementById('signs-select-bar');
+  bar.style.display=signsSelectMode?'flex':'none';
+  renderSignsHistoryList(signsHistEntries);
+}
+
+function selectAllSignsHist(){
+  document.querySelectorAll('.sign-hist-cb').forEach(cb=>cb.checked=true);
+  updateSignsSelectCount();
+}
+
+function updateSignsSelectCount(){
+  const n=document.querySelectorAll('.sign-hist-cb:checked').length;
+  document.getElementById('signs-select-count').textContent=`${n} נבחרו`;
+}
+
+async function downloadSelectedSigns(){
+  const checked=[...document.querySelectorAll('.sign-hist-cb:checked')];
+  if(!checked.length){alert('לא נבחרו רשימות');return;}
+  const indices=checked.map(cb=>parseInt(cb.dataset.idx));
+  const selected=indices.map(i=>signsHistEntries[i]).filter(Boolean);
+  try{
+    const wb=new ExcelJS.Workbook();
+    wb.creator='י.שכטר חשמל';
+    const orange='FFE8590C',dark='FF1A1D21',lightGray='FFF2F2F2',white='FFFFFFFF';
+    selected.forEach((entry,ei)=>{
+      const sheetName=`${entry.foreman||'רשימה'} ${ei+1}`.slice(0,31);
+      const ws=wb.addWorksheet(sheetName,{views:[{rightToLeft:true}]});
+      ws.mergeCells(1,1,1,5);
+      const t=ws.getRow(1).getCell(1);
+      t.value=`${entry.project||''}${entry.foreman?' – '+entry.foreman:''} – ${entry.date||''}`;
+      t.font={bold:true,color:{argb:white},name:'Arial',size:13};
+      t.fill={type:'pattern',pattern:'solid',fgColor:{argb:orange}};
+      t.alignment={horizontal:'center',vertical:'middle'};
+      ws.getRow(1).height=28;
+      const hr=ws.addRow(['#','שם שלט','גודל','צבע','מיקום']);
+      hr.height=22;
+      hr.eachCell(c=>{c.font={bold:true,color:{argb:white},name:'Arial',size:11};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:dark}};c.alignment={horizontal:'center',vertical:'middle'};});
+      ws.columns=[{width:5},{width:30},{width:15},{width:15},{width:20}];
+      (entry.signs||[]).forEach((s,i)=>{
+        const row=ws.addRow([i+1,s.name,s.size||'',s.colorText||'',s.location||'']);
+        row.height=20;
+        row.eachCell(c=>{c.font={name:'Arial',size:10};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:i%2===0?lightGray:white}};c.alignment={horizontal:'right',vertical:'middle'};});
+      });
+    });
+    const buf=await wb.xlsx.writeBuffer();
+    const url=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+    if(isIOS){window.open(url,'_blank');}
+    else{const a=document.createElement('a');a.href=url;a.download=`שלטים-נבחרים.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);}
+  }catch(err){alert('שגיאה: '+err.message);}
+}
+
+function showSignsHistory(){
+  signsSelectMode=false;
+  signsHistEntries=[];
+  document.getElementById('btn-signs-select').textContent='☑ בחר';
+  document.getElementById('signs-select-bar').style.display='none';
+  showScreen('signs-history');
+  const el=document.getElementById('signs-history-list');
+  el.innerHTML='<div class="hist-empty">⏳ טוען...</div>';
+  const pt=state.projectType||'p1';
+  if(db){
+    db.collection('signs').where('projectType','==',pt).orderBy('ts','desc').limit(100).get()
+      .then(snap=>{signsHistEntries=snap.docs.map(d=>d.data());renderSignsHistoryList(signsHistEntries);})
+      .catch(()=>renderSignsHistoryList([]));
+  } else { renderSignsHistoryList([]); }
+}
+
+function renderSignsHistoryList(entries){
+  const el=document.getElementById('signs-history-list');
+  if(!entries.length){el.innerHTML='<div class="hist-empty">🕐<br><br>אין היסטוריית שלטים עדיין.</div>';return;}
+  el.innerHTML='';
+  entries.forEach((entry,idx)=>{
+    const card=document.createElement('div');
+    card.style.cssText='background:#fff;border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.08)';
+    const signRows=(entry.signs||[]).map((s,j)=>`
+      <div style="font-size:13px;padding:5px 0;border-bottom:1px solid #f0f0f0">
+        <strong>${j+1}. ${s.name}</strong>
+        ${s.size?` · ${s.size}`:''}${s.colorText?` · ${s.colorText}`:''}${s.location?` · 📍${s.location}`:''}
+      </div>`).join('');
+    const cbHtml=signsSelectMode?`<input type="checkbox" class="sign-hist-cb" data-idx="${idx}" onchange="updateSignsSelectCount()" style="width:20px;height:20px;margin-left:10px;cursor:pointer">`:'';
+    card.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="display:flex;align-items:center">${cbHtml}
+          <div>
+            <div style="font-size:15px;font-weight:800;color:var(--dark)">${entry.foreman||'ללא שם'}</div>
+            <div style="font-size:12px;color:#888">${entry.date||''} · ${(entry.signs||[]).length} שלטים</div>
+          </div>
+        </div>
+        ${!signsSelectMode?`<button style="background:#27ae60;border:none;border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:Heebo,Arial">📊 Excel</button>`:''}
+      </div>
+      <div style="max-height:180px;overflow-y:auto">${signRows}</div>`;
+    if(!signsSelectMode) card.querySelector('button').addEventListener('click',()=>downloadSignsExcelFromEntry(entry));
+    el.appendChild(card);
+  });
+}
+
+async function downloadSignsExcelFromEntry(entry){
+  try{
+    const signs=entry.signs||[];
+    const proj=entry.project||'';
+    const wb=new ExcelJS.Workbook();
+    const ws=wb.addWorksheet('רשימת שלטים',{views:[{rightToLeft:true}]});
+    const orange='FFE8590C',dark='FF1A1D21',lightGray='FFF2F2F2',white='FFFFFFFF';
+    ws.mergeCells(1,1,1,6);
+    const t=ws.getRow(1).getCell(1);
+    t.value=`רשימת שלטים – ${proj}${entry.foreman?' – '+entry.foreman:''} – ${entry.date||''}`;
+    t.font={bold:true,color:{argb:white},name:'Arial',size:13};
+    t.fill={type:'pattern',pattern:'solid',fgColor:{argb:orange}};
+    t.alignment={horizontal:'center',vertical:'middle'};
+    ws.getRow(1).height=28;
+    const hr=ws.addRow(['#','שם שלט','גודל','צבע','מיקום','תאריך']);
+    hr.height=22;
+    hr.eachCell(c=>{c.font={bold:true,color:{argb:white},name:'Arial',size:11};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:dark}};c.alignment={horizontal:'center',vertical:'middle'};});
+    ws.columns=[{width:5},{width:30},{width:15},{width:15},{width:20},{width:14}];
+    signs.forEach((s,i)=>{
+      const row=ws.addRow([i+1,s.name,s.size||'',s.colorText||'',s.location||'',s.date||'']);
+      row.height=20;
+      row.eachCell(c=>{c.font={name:'Arial',size:10};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:i%2===0?lightGray:white}};c.alignment={horizontal:'right',vertical:'middle'};});
+    });
+    const buf=await wb.xlsx.writeBuffer();
+    const url=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+    if(isIOS){window.open(url,'_blank');}
+    else{const a=document.createElement('a');a.href=url;a.download=`שלטים-${proj}.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);}
+  }catch(err){alert('שגיאה: '+err.message);}
+}
+
+function submitSigns(){
+  const pt=state.projectType||'p1';
+  const signs=(state.signs&&state.signs[pt])||[];
+  if(!signs.length){alert('אין שלטים ברשימה');return;}
+  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם'};
+  const proj=projNames[pt]||state.project;
+  const foreman=state.foreman||'';
+
+  // שמירה ל-Firebase
+  if(db){
+    const signsEntry={
+      ts: Date.now(),
+      date: new Date().toLocaleString('he-IL'),
+      project: proj,
+      projectType: pt,
+      foreman,
+      phone: state.phone||'',
+      signs: signs.map(s=>({name:s.name,size:s.size,colorText:s.colorText,colorHex:s.colorHex,location:s.location,date:s.date}))
+    };
+    db.collection('signs').add(signsEntry).catch(()=>{});
+  }
+
+  // מעבר למסך שליחה
+  const infoEl=document.getElementById('signs-send-info');
+  if(infoEl) infoEl.textContent=`${proj}${foreman?' — '+foreman:''} | ${signs.length} שלטים`;
+  const listEl=document.getElementById('signs-send-list');
+  if(listEl){
+    listEl.innerHTML=signs.map((s,i)=>`
+      <div style="border-bottom:1px solid #eee;padding:8px 0;font-size:14px">
+        <strong>${i+1}. ${s.name}</strong>
+        ${s.size?` · <span style="color:#666">${s.size}</span>`:''}
+        ${s.colorText?` · <span style="color:#666">${s.colorText}</span>`:''}
+        ${s.location?` · <span style="color:#4a6278">📍${s.location}</span>`:''}
+      </div>`).join('');
+  }
+  showScreen('signs-send');
+}
+
+function sendSignsWhatsApp(){
+  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם'};
+  const pt=state.projectType||'p1';
+  const proj=projNames[pt]||state.project;
+  const foreman=state.foreman||'';
+  const cnt=(state.signs&&state.signs[pt]||[]).length;
+  const msg=encodeURIComponent(`🪧 רשימת שלטים הוגשה\nפרויקט: ${proj}${foreman?'\nפועל: '+foreman:''}\nמספר שלטים: ${cnt}\n\nפתחי את האפליקציה להורדת Excel`);
+  window.open(`https://wa.me/972586299460?text=${msg}`,'_blank');
+}
+
+function sendSignsEmail(e){
+  if(e) e.preventDefault();
+  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם'};
+  const pt=state.projectType||'p1';
+  const proj=projNames[pt]||state.project;
+  const subject=encodeURIComponent(`רשימת שלטים – ${proj} – ${new Date().toLocaleDateString('he-IL')}`);
+  const body=encodeURIComponent(buildSignsText());
+  window.open(`mailto:office@yshechter.co.il?subject=${subject}&body=${body}`,'_self');
+}
+
+async function downloadSignsExcel(){
+  try{
+    const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם'};
+    const pt=state.projectType||'p1';
+    const signs=(state.signs&&state.signs[pt])||[];
+    const proj=projNames[pt]||state.project;
+    const wb=new ExcelJS.Workbook();
+    wb.creator='י.שכטר חשמל';
+    const ws=wb.addWorksheet('רשימת שלטים',{views:[{rightToLeft:true}]});
+    const orange='FFE8590C', dark='FF1A1D21', lightGray='FFF2F2F2', white='FFFFFFFF';
+    const hdr=(cell,txt)=>{
+      cell.value=txt;
+      cell.font={bold:true,color:{argb:white},name:'Arial',size:11};
+      cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:dark}};
+      cell.alignment={horizontal:'center',vertical:'middle',wrapText:true};
+      cell.border={bottom:{style:'thin',color:{argb:orange}}};
+    };
+    ws.getRow(1).height=24;
+    ['#','שם שלט','גודל','צבע','מיקום','תאריך'].forEach((h,i)=>hdr(ws.getRow(1).getCell(i+1),h));
+    ws.columns=[{width:5},{width:30},{width:15},{width:15},{width:20},{width:14}];
+    signs.forEach((s,i)=>{
+      const row=ws.addRow([i+1,s.name,s.size||'',s.colorText||'',s.location||'',s.date||'']);
+      row.height=20;
+      row.eachCell(c=>{
+        c.font={name:'Arial',size:10};
+        c.fill={type:'pattern',pattern:'solid',fgColor:{argb:i%2===0?lightGray:white}};
+        c.alignment={horizontal:'right',vertical:'middle'};
+        c.border={bottom:{style:'hair',color:{argb:'FFcccccc'}}};
+      });
+    });
+    // שורת כותרת בראש
+    ws.spliceRows(1,0,[]);
+    const titleRow=ws.getRow(1);
+    ws.mergeCells(1,1,1,6);
+    titleRow.getCell(1).value=`רשימת שלטים – ${proj}${state.foreman?' – '+state.foreman:''}`;
+    titleRow.getCell(1).font={bold:true,color:{argb:white},name:'Arial',size:13};
+    titleRow.getCell(1).fill={type:'pattern',pattern:'solid',fgColor:{argb:orange}};
+    titleRow.getCell(1).alignment={horizontal:'center',vertical:'middle'};
+    titleRow.height=28;
+
+    const buf=await wb.xlsx.writeBuffer();
+    const url=URL.createObjectURL(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+    const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)&&!window.MSStream;
+    if(isIOS){window.open(url,'_blank');}
+    else{const a=document.createElement('a');a.href=url;a.download=`שלטים-${proj}.xlsx`;document.body.appendChild(a);a.click();setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},1000);}
+  }catch(err){alert('שגיאה בהורדת Excel: '+err.message);}
 }
 
 // ========== HISTORY ==========

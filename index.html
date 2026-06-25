@@ -1752,9 +1752,12 @@ function showSignsHistory(){
   el.innerHTML='<div class="hist-empty">⏳ טוען...</div>';
   const pt=state.projectType||'p1';
   if(db){
-    db.collection('signs').where('projectType','==',pt).orderBy('ts','desc').limit(100).get()
-      .then(snap=>{signsHistEntries=snap.docs.map(d=>d.data());renderSignsHistoryList(signsHistEntries);})
-      .catch(()=>renderSignsHistoryList([]));
+    db.collection('signs').where('projectType','==',pt).get()
+      .then(snap=>{
+        signsHistEntries=snap.docs.map(d=>d.data()).sort((a,b)=>(b.ts||0)-(a.ts||0));
+        renderSignsHistoryList(signsHistEntries);
+      })
+      .catch(err=>{alert('שגיאה בטעינה: '+err.message);renderSignsHistoryList([]);});
   } else { renderSignsHistoryList([]); }
 }
 

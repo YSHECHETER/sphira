@@ -2087,8 +2087,10 @@ function renderHistList(hist){
 function filterHistByProject(hist){
   const pt=state.projectType||'p1';
   return hist.filter(e=>{
-    const ept=e.projectType||'p1';
-    return ept===pt;
+    const rid=e.roomId||'';
+    if(rid.startsWith('p3_')) return pt==='p3';
+    if(rid.startsWith('p2_')) return pt==='p2';
+    return pt==='p1';
   });
 }
 
@@ -2100,9 +2102,13 @@ function showHistory(){
   const el=document.getElementById('hist-list');
   if(db){
     el.innerHTML='<div class="hist-empty">⏳ טוען...</div>';
-    db.collection('counts').orderBy('ts','desc').limit(500).get()
-      .then(snap=>{
-        const hist=filterHistByProject(snap.docs.map(d=>({...d.data(), _fireId:d.id})));
+    const pt=state.projectType||'p1';
+    const q = pt==='p1'
+      ? db.collection('counts').limit(500).get()
+      : db.collection('counts').where('projectType','==',pt).limit(500).get();
+    q.then(snap=>{
+        const all=snap.docs.map(d=>({...d.data(),_fireId:d.id}));
+        const hist=filterHistByProject(all).sort((a,b)=>(b.ts||0)-(a.ts||0));
         renderHistList(hist);
       })
       .catch(()=>{
@@ -2189,8 +2195,21 @@ async function downloadHistSummary(){
       {title:'פרק 083 - עבודות חשמל: מעבדות 2204, 1002 ו-1006E', sheet:2},
     ];
 
-    // צבור כמויות מכל הספירות
-    const agg = {}; // itemId -> total qty
+    // קיבוץ לפי חדר
+    const byRoom = {};
+    hist.forEach(e => {
+      if(!e.data) return;
+      const key = e.roomId||'unknown';
+      if(!byRoom[key]) byRoom[key]={roomName:e.roomName||e.roomId||'', roomId:key, entries:[]};
+      byRoom[key].entries.push(e);
+    });
+
+    // גיליון ריכוז כולל
+    const ws = wb.addWorksheet('ריכוז כולל', {views:[{rightToLeft:true}]});
+    ws.columns = [{width:16},{width:58},{width:9},{width:15},{width:15},{width:11}];
+
+    // צבור כמויות מכל הספירות לריכוז
+    const agg = {};
     hist.forEach(e => {
       if(!e.data) return;
       Object.keys(e.data).forEach(itemId => {
@@ -2198,9 +2217,6 @@ async function downloadHistSummary(){
         if(!isNaN(qty)) agg[itemId] = (agg[itemId]||0) + qty;
       });
     });
-
-    const ws = wb.addWorksheet('ריכוז היסטוריה', {views:[{rightToLeft:true}]});
-    ws.columns = [{width:16},{width:58},{width:9},{width:15},{width:15},{width:11}];
 
     const titleRow = ws.addRow(['ריכוז ספירות היסטוריה — י.שכטר חשמל']);
     ws.mergeCells(`A${titleRow.number}:F${titleRow.number}`);
@@ -2258,6 +2274,48 @@ async function downloadHistSummary(){
         });
       });
       ws.addRow([]);
+    });
+
+    // גיליון נפרד לכל חדר
+    Object.values(byRoom).forEach(room => {
+      const aggRoom = {};
+      room.entries.forEach(e => {
+        if(!e.data) return;
+        Object.keys(e.data).forEach(itemId => {
+          const qty = parseFloat(e.data[itemId].qty);
+          if(!isNaN(qty)) aggRoom[itemId] = (aggRoom[itemId]||0) + qty;
+        });
+      });
+      const wsRoom = wb.addWorksheet(room.roomName.slice(0,31), {views:[{rightToLeft:true}]});
+      wsRoom.columns = [{width:16},{width:58},{width:9},{width:15},{width:15},{width:11}];
+      const rTitle = wsRoom.addRow([room.roomName]);
+      wsRoom.mergeCells(`A${rTitle.number}:F${rTitle.number}`);
+      rTitle.height = 26;
+      rTitle.getCell(1).font = {bold:true,size:13,color:{argb:white}};
+      rTitle.getCell(1).fill = {type:'pattern',pattern:'solid',fgColor:{argb:orange}};
+      rTitle.getCell(1).alignment = {horizontal:'center',vertical:'middle'};
+      const roomObj = getRooms().find(r=>r.id===room.roomId);
+      const sections = roomObj ? getSections(roomObj) : [];
+      const rHdr = wsRoom.addRow(['מספר','תיאור','יח\'','אומדן','ספירה','הערה']);
+      rHdr.height = 18;
+      rHdr.eachCell(c=>{c.font={bold:true,size:10,color:{argb:white}};c.fill={type:'pattern',pattern:'solid',fgColor:{argb:'FF2F4F4F'}};c.alignment={horizontal:'center'};});
+      sections.forEach(sec => {
+        const secRow = wsRoom.addRow([sec.num, sec.name,'','','','']);
+        wsRoom.mergeCells(`B${secRow.number}:F${secRow.number}`);
+        secRow.getCell(1).font={bold:true,size:10};
+        secRow.getCell(2).font={bold:true,size:10};
+        secRow.getCell(1).fill={type:'pattern',pattern:'solid',fgColor:{argb:yellow}};
+        secRow.getCell(2).fill={type:'pattern',pattern:'solid',fgColor:{argb:yellow}};
+        sec.items.forEach((it,idx) => {
+          const qty = aggRoom[it.id]||0;
+          const row = wsRoom.addRow([it.num, it.desc, it.unit, it.est, qty||'', '']);
+          const bg = idx%2===0 ? 'FFFAFAFA' : white;
+          for(let i=1;i<=6;i++){row.getCell(i).fill={type:'pattern',pattern:'solid',fgColor:{argb:bg}};row.getCell(i).font={size:10};}
+          if(qty>0) row.getCell(5).font={bold:true,size:10,color:{argb:qty>it.est?'FFCC0000':'FF006600'}};
+          row.getCell(2).alignment={wrapText:true};
+        });
+      });
+      wsRoom.addRow([]);
     });
 
     const buf = await wb.xlsx.writeBuffer();

@@ -2102,11 +2102,8 @@ function showHistory(){
   const el=document.getElementById('hist-list');
   if(db){
     el.innerHTML='<div class="hist-empty">⏳ טוען...</div>';
-    const pt=state.projectType||'p1';
-    const q = pt==='p1'
-      ? db.collection('counts').limit(500).get()
-      : db.collection('counts').where('projectType','==',pt).limit(500).get();
-    q.then(snap=>{
+    db.collection('counts').limit(500).get()
+    .then(snap=>{
         const all=snap.docs.map(d=>({...d.data(),_fireId:d.id}));
         const hist=filterHistByProject(all).sort((a,b)=>(b.ts||0)-(a.ts||0));
         renderHistList(hist);

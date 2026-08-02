@@ -1741,7 +1741,7 @@ function countDoneItems(room){
 }
 
 function openRoom(roomId){
-  const room=[...ROOMS,...ROOMS_P2,...ROOMS_P3,...ROOMS_P4].find(r=>r.id===roomId);
+  const room=[...ROOMS,...ROOMS_P2,...ROOMS_P3,...ROOMS_P4,...ROOMS_P5,...ROOMS_P6,...ROOMS_P7,...ROOMS_P8,...ROOMS_P9].find(r=>r.id===roomId);
   state.currentRoom=room;
   if(!state.data[roomId]) state.data[roomId]={};
   document.getElementById('count-room-name').textContent=room.name+(room.type?' – '+room.type:'');
@@ -2735,7 +2735,7 @@ async function downloadHistSummary(){
     ws.addRow([]);
 
     chapters.forEach(ch => {
-      const chRooms = [...ROOMS, ...ROOMS_P2].filter(r=>r.sheet===ch.sheet);
+      const chRooms = [...ROOMS,...ROOMS_P2,...ROOMS_P3,...ROOMS_P4,...ROOMS_P5,...ROOMS_P6,...ROOMS_P7,...ROOMS_P8,...ROOMS_P9].filter(r=>r.sheet===ch.sheet);
       if(!chRooms.length) return;
       const sections = getSections(chRooms[0]);
 
@@ -3354,7 +3354,7 @@ async function downloadPricedExcel(groupIdx){
     if(validDocs.length===0){ alert('לא נמצאו נתונים'); return; }
 
     const d0 = validDocs[0].data();
-    const allRooms = [...ROOMS,...ROOMS_P2,...ROOMS_P3,...ROOMS_P4,...ROOMS_P5,...ROOMS_P6,...ROOMS_P7,...ROOMS_P8];
+    const allRooms = [...ROOMS,...ROOMS_P2,...ROOMS_P3,...ROOMS_P4,...ROOMS_P5,...ROOMS_P6,...ROOMS_P7,...ROOMS_P8,...ROOMS_P9];
     const roomsData = {};
     const roomOrder = [];
     validDocs.forEach(doc=>{
@@ -3453,7 +3453,7 @@ async function downloadPricedExcel(groupIdx){
 
 async function downloadPricedExcelMulti(groupIdxs){
   try {
-    const allRooms = [...ROOMS,...ROOMS_P2,...ROOMS_P3,...ROOMS_P4,...ROOMS_P5,...ROOMS_P6,...ROOMS_P7,...ROOMS_P8];
+    const allRooms = [...ROOMS,...ROOMS_P2,...ROOMS_P3,...ROOMS_P4,...ROOMS_P5,...ROOMS_P6,...ROOMS_P7,...ROOMS_P8,...ROOMS_P9];
     const wb = new ExcelJS.Workbook();
     wb.creator = 'י.שכטר';
     const orange='FFF5C400', white='FFFFFFFF', darkBg='FF2d3f50';

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -282,6 +282,7 @@ body{font-family:'Heebo',Arial,sans-serif;background:#eef1f4;color:#2c3e50;direc
           <option value="אלישרא - אתרוג UPS 250 קוו&quot;א">
           <option value="גב ים - לוח ותשתית חשמל לחנויות קומה 7">
           <option value="מדעי הרוח - שיפוץ כיתות">
+          <option value="אלישרא ITB פריסת כבלים">
         </datalist>
       </div>
       <div class="form-group">
@@ -1405,7 +1406,23 @@ const SECTIONS_P8 = [
   ]},
 ];
 
+const ROOMS_P9 = [
+  {id:'p9_main', name:'פריסת כבלים', floor:'אלישרא ITB', type:'', sheet:11, icon:'🔌'},
+];
+
+const SECTIONS_P9 = [
+  {name:'אלישרא ITB פריסת כבלים 07.26', num:'01.1', note:'לפי הצעת מחיר מיום 02/08/2026 — סה"כ 12,460 ₪ לפני מע"מ.', items:[
+    {id:'p9_1_010',num:'01.1.010',desc:'תעלה PVC 25*25',unit:'מטר',est:2,price:12},
+    {id:'p9_1_020',num:'01.1.020',desc:'תעלת PVC 120',unit:'מטר',est:10,price:40},
+    {id:'p9_1_040',num:'01.1.040',desc:'כבל N2XY 3*6',unit:'מטר',est:210,price:20},
+    {id:'p9_1_041',num:'01.1.041',desc:'צינור קוברה 50',unit:'מטר',est:50,price:8},
+    {id:'p9_1_050',num:'01.1.050',desc:'צוות חשמלאים עם רשיון חשמל',unit:'י"ע',est:2,price:3298},
+    {id:'p9_1_060',num:'01.1.060',desc:'שקע סיקון גוויס חד פאזי 32A',unit:"יח'",est:7,price:120},
+  ]},
+];
+
 function getSections(room){
+  if(room.sheet===11) return SECTIONS_P9;
   if(room.sheet===10) return SECTIONS_P8;
   if(room.sheet===9) return SECTIONS_P7;
   if(room.sheet===8) return SECTIONS_P6;
@@ -1426,6 +1443,7 @@ function getRooms(){
   if(state.projectType==='p6') return ROOMS_P6;
   if(state.projectType==='p7') return ROOMS_P7;
   if(state.projectType==='p8') return ROOMS_P8;
+  if(state.projectType==='p9') return ROOMS_P9;
   return ROOMS;
 }
 
@@ -1482,6 +1500,8 @@ function onProjectInput(val){
     state.projectType='p5';
   } else if(val.includes('אתרוג')||val.includes('UPS')||val.includes('ups')||val.includes('אל פסק')){
     state.projectType='p6';
+  } else if(val.includes('ITB')||val.includes('itb')||val.includes('פריסת כבלים')){
+    state.projectType='p9';
   } else if(val.includes('אלישרא')||val.includes('HPM')||val.includes('hpm')){
     state.projectType='p4';
   } else if(val.includes('גב ים')||val.includes('חנויות')){
@@ -1965,7 +1985,7 @@ function shareSummaryImage(){
 }
 
 function showSignsSend(){
-  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM'};
+  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM',p9:'אלישרא ITB פריסת כבלים'};
   const pt=state.projectType||'p1';
   const signs=state.signs[pt]||[];
   document.getElementById('signs-send-info').textContent=(projNames[pt]||state.project)+' | '+new Date().toLocaleDateString('he-IL');
@@ -1977,7 +1997,7 @@ function showSignsSend(){
 }
 
 function buildSignsText(){
-  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM'};
+  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM',p9:'אלישרא ITB פריסת כבלים'};
   const pt=state.projectType||'p1';
   const signs=state.signs[pt]||[];
   const now=new Date().toLocaleDateString('he-IL');
@@ -2009,7 +2029,7 @@ function sendSignsWhatsApp(){
 
 function sendSignsEmail(e){
   e.preventDefault();
-  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM'};
+  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM',p9:'אלישרא ITB פריסת כבלים'};
   const pt=state.projectType||'p1';
   const subject=encodeURIComponent(`רשימת שלטים – ${projNames[pt]||state.project} – ${new Date().toLocaleDateString('he-IL')}`);
   const body=encodeURIComponent(buildSignsText());
@@ -2046,7 +2066,7 @@ function saveToStorage(){
 
 function showSigns(){
   try{
-    const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM'};
+    const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM',p9:'אלישרא ITB פריסת כבלים'};
     const titleEl=document.getElementById('signs-title');
     if(titleEl) titleEl.textContent='🪧 שלטים — '+(projNames[state.projectType||'p1']||state.project);
     const formEl=document.getElementById('signs-form');
@@ -2310,7 +2330,7 @@ function submitSigns(){
   const pt=state.projectType||'p1';
   const signs=(state.signs&&state.signs[pt])||[];
   if(!signs.length){alert('אין שלטים ברשימה');return;}
-  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM'};
+  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM',p9:'אלישרא ITB פריסת כבלים'};
   const proj=projNames[pt]||state.project;
   const foreman=state.foreman||'';
 
@@ -2348,7 +2368,7 @@ function submitSigns(){
 }
 
 function sendSignsWhatsApp(){
-  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM'};
+  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM',p9:'אלישרא ITB פריסת כבלים'};
   const pt=state.projectType||'p1';
   const proj=projNames[pt]||state.project;
   const foreman=state.foreman||'';
@@ -2359,7 +2379,7 @@ function sendSignsWhatsApp(){
 
 function sendSignsEmail(e){
   if(e) e.preventDefault();
-  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM'};
+  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM',p9:'אלישרא ITB פריסת כבלים'};
   const pt=state.projectType||'p1';
   const proj=projNames[pt]||state.project;
   const subject=encodeURIComponent(`רשימת שלטים – ${proj} – ${new Date().toLocaleDateString('he-IL')}`);
@@ -2369,7 +2389,7 @@ function sendSignsEmail(e){
 
 async function downloadSignsExcel(){
   try{
-    const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM'};
+    const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM',p9:'אלישרא ITB פריסת כבלים'};
     const pt=state.projectType||'p1';
     const signs=(state.signs&&state.signs[pt])||[];
     const proj=projNames[pt]||state.project;
@@ -2573,7 +2593,7 @@ function filterHistByProject(hist){
 function showHistory(){
   showScreen('history');
   // עדכון כותרת לפי פרויקט
-  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM'};
+  const projNames={p1:'מכון כדור הארץ',p2:'מאיץ מרכז אנרגיה',p3:'הדסה עין כרם',p4:'אלישרא HPM',p9:'אלישרא ITB פריסת כבלים'};
   document.querySelector('#screen-history .hist-wrap div[style*="font-size:18px"]').textContent='היסטוריית ספירות — '+(projNames[state.projectType||'p1']||state.project);
   const el=document.getElementById('hist-list');
   if(db){
@@ -3197,7 +3217,8 @@ const PROJ_META = {
   p5: {name:'אלישרא - גוף תאורה', icon:'💡'},
   p6: {name:'אלישרא - אתרוג UPS', icon:'⚡'},
   p7: {name:'גב ים - חנויות', icon:'🏪'},
-  p8: {name:'מדעי הרוח - שיפוץ כיתות', icon:'🎓'}
+  p8: {name:'מדעי הרוח - שיפוץ כיתות', icon:'🎓'},
+  p9: {name:'אלישרא ITB - פריסת כבלים', icon:'🔌'}
 };
 
 function detectProjectType(d){
@@ -3207,6 +3228,7 @@ function detectProjectType(d){
   if(name.includes('הדסה') || name.includes('hadassah')) return 'p3';
   if(name.includes('גוף תאורה') || name.includes('חד תכליתי')) return 'p5';
   if(name.includes('אתרוג') || name.includes('ups') || name.includes('אל פסק') || name.includes('250 קוו')) return 'p6';
+  if(name.includes('itb') || name.includes('פריסת כבלים')) return 'p9';
   if(name.includes('אלישרא') || name.includes('elishara')) return 'p4';
   if(name.includes('גב ים') || name.includes('gav yam') || name.includes('חנויות')) return 'p7';
   if(name.includes('מדעי הרוח') || name.includes('כיתה') || name.includes('0541') || name.includes('0542')) return 'p8';

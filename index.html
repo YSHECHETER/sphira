@@ -2583,9 +2583,10 @@ function renderHistList(hist){
 function filterHistByProject(hist){
   const pt=state.projectType||'p1';
   return hist.filter(e=>{
+    if(e.projectType) return e.projectType===pt;
     const rid=e.roomId||'';
-    if(rid.startsWith('p3_')) return pt==='p3';
-    if(rid.startsWith('p2_')) return pt==='p2';
+    const m=rid.match(/^p(\d+)_/);
+    if(m) return pt==='p'+m[1];
     return pt==='p1';
   });
 }
@@ -3265,7 +3266,7 @@ async function loadOfficeHistory(){
 
     // בנה כרטיסי פרויקטים
     grid.innerHTML = '';
-    ['p1','p2','p3','p4'].forEach(pt=>{
+    Object.keys(PROJ_META).forEach(pt=>{
       const m = PROJ_META[pt];
       const list = _officeByProject[pt]||[];
       if(list.length===0) return;

@@ -203,6 +203,18 @@ body{font-family:'Heebo',Arial,sans-serif;background:#eef1f4;color:#2c3e50;direc
 .clothing-table td{padding:10px 8px;border-bottom:1px solid #f0f3f5;text-align:center;font-size:15px}
 .clothing-table td:first-child{text-align:right;padding-right:16px;font-weight:700;font-size:14px;color:var(--dark)}
 .clothing-table tr:last-child td{border-bottom:none}
+.clothing-table th.cl-item{border-right:2px solid #fff;border-left:2px solid #fff;font-size:13px;line-height:1.25;padding:10px 4px}
+.clothing-table th.cl-gray{background:#8A939B;font-size:12px;padding:6px 2px}
+.clothing-table th.cl-blue{background:#2F6FB3;font-size:12px;padding:6px 2px}
+.clothing-table td.cl-gray{background:#F1F3F5;padding:8px 3px}
+.clothing-table td.cl-blue{background:#E8F1FB;padding:8px 3px}
+.clothing-table td.cl-blue + td.cl-gray{border-right:2px solid #fff}
+.clothing-table td.cl-size{font-size:16px;font-weight:800;text-align:center;padding:10px 12px;white-space:nowrap}
+.clothing-table td.cl-size{position:sticky;right:0;z-index:1;background:#fff}
+.clothing-table th[rowspan]{position:sticky;right:0;z-index:2}
+.clothing-table tr.cl-total td{font-weight:800;font-size:15px;color:var(--dark);border-top:2px solid var(--dark)}
+.clothing-table .clothing-qty-inp{width:46px;font-size:16px;padding:7px 2px;background:#fff}
+.cl-legacy{background:#FFF8E1;border:1px solid #F5C400;border-radius:10px;padding:10px 12px;font-size:13px;color:var(--dark);margin-bottom:12px;line-height:1.6}
 .clothing-qty-inp{width:58px;padding:8px 4px;border:1.5px solid var(--border);border-radius:8px;font-size:17px;font-weight:700;font-family:'Heebo',Arial;text-align:center}
 .clothing-qty-inp:focus{outline:none;border-color:var(--teal)}
 .btn-save-clothing{width:100%;padding:14px;background:var(--teal);color:#1A1D21;border:none;border-radius:10px;font-size:17px;font-weight:700;font-family:'Heebo',Arial;cursor:pointer;margin-top:16px}
@@ -579,14 +591,10 @@ body{font-family:'Heebo',Arial,sans-serif;background:#eef1f4;color:#2c3e50;direc
     <!-- TAB: CLOTHING -->
     <div class="office-panel active" id="panel-clothing">
       <div style="font-size:16px;font-weight:700;color:var(--dark);margin-bottom:14px">מלאי ביגוד עובדים</div>
+      <div id="clothing-legacy"></div>
       <div style="overflow-x:auto">
         <table class="clothing-table">
-          <thead>
-            <tr>
-              <th>פריט</th>
-              <th>S</th><th>M</th><th>L</th><th>XL</th><th>XXL</th>
-            </tr>
-          </thead>
+          <thead id="clothing-thead"></thead>
           <tbody id="clothing-tbody"></tbody>
         </table>
       </div>
@@ -3096,6 +3104,7 @@ loadFromStorage();
 // ========== OFFICE MODE ==========
 const CLOTHING_ITEMS = ['חולצה קצרה','חולצה קצרה דרייפיט','חולצה ארוכה','חולצה קפוצ\'ון','מכנסיים'];
 const CLOTHING_SIZES = ['S','M','L','XL','XXL'];
+const CLOTHING_COLORS = [{key:'gray',label:'אפור',hex:'#8A939B'},{key:'blue',label:'כחול',hex:'#2F6FB3'}];
 let pwEntry = '';
 let clothingData = {};
 
@@ -3162,30 +3171,94 @@ function switchOfficeTab(tab){
 }
 
 // ---- Clothing inventory ----
+function clInpId(item,color,size){ return 'cl_'+item.replace(/[^a-zA-Zא-ת]/g,'_')+'_'+color+'_'+size; }
+// מבנה נתונים: clothingData[item][color][size]
+// מבנה ישן (לפני הצבעים): clothingData[item][size] = מספר → נשמר תחת _legacy
+function clGet(item,color,size){
+  const it = clothingData[item]; if(!it) return 0;
+  const c = it[color]; return (c && typeof c==='object') ? (c[size]||0) : 0;
+}
 function buildClothingTable(){
+  const thead = document.getElementById('clothing-thead');
   const tbody = document.getElementById('clothing-tbody');
-  tbody.innerHTML = '';
+  // כותרת: שורה 1 = סוגי בגד, שורה 2 = צבעים
+  let h1 = '<tr><th rowspan="2">מידה</th>';
+  let h2 = '<tr>';
   CLOTHING_ITEMS.forEach(item=>{
+    h1 += '<th class="cl-item" colspan="'+CLOTHING_COLORS.length+'">'+item+'</th>';
+    CLOTHING_COLORS.forEach(c=>{ h2 += '<th class="cl-'+c.key+'">'+c.label+'</th>'; });
+  });
+  thead.innerHTML = h1+'</tr>'+h2+'</tr>';
+  // גוף: שורה לכל מידה
+  tbody.innerHTML = '';
+  CLOTHING_SIZES.forEach(size=>{
     const tr = document.createElement('tr');
-    const nameTd = document.createElement('td');
-    nameTd.textContent = item;
-    tr.appendChild(nameTd);
-    CLOTHING_SIZES.forEach(size=>{
-      const td = document.createElement('td');
-      const inp = document.createElement('input');
-      inp.type='number'; inp.min='0'; inp.className='clothing-qty-inp';
-      inp.id='cl_'+item.replace(/[^a-zA-Zא-ת]/g,'_')+'_'+size;
-      inp.value = (clothingData[item]||{})[size] || 0;
-      td.appendChild(inp);
-      tr.appendChild(td);
+    const sTd = document.createElement('td');
+    sTd.className='cl-size'; sTd.textContent = size;
+    tr.appendChild(sTd);
+    CLOTHING_ITEMS.forEach(item=>{
+      CLOTHING_COLORS.forEach(c=>{
+        const td = document.createElement('td');
+        td.className = 'cl-'+c.key;
+        const inp = document.createElement('input');
+        inp.type='number'; inp.min='0'; inp.inputMode='numeric'; inp.className='clothing-qty-inp';
+        inp.id = clInpId(item,c.key,size);
+        inp.value = clGet(item,c.key,size);
+        inp.addEventListener('input', updateClothingTotals);
+        td.appendChild(inp); tr.appendChild(td);
+      });
     });
     tbody.appendChild(tr);
   });
+  // שורת סה"כ
+  const tt = document.createElement('tr'); tt.className='cl-total';
+  let th = '<td class="cl-size">סה״כ</td>';
+  CLOTHING_ITEMS.forEach(item=>CLOTHING_COLORS.forEach(c=>{
+    th += '<td class="cl-'+c.key+'" id="'+clInpId(item,c.key,'total')+'">0</td>';
+  }));
+  tt.innerHTML = th; tbody.appendChild(tt);
+  updateClothingTotals();
+  renderClothingLegacy();
+}
+function updateClothingTotals(){
+  CLOTHING_ITEMS.forEach(item=>CLOTHING_COLORS.forEach(c=>{
+    let sum=0;
+    CLOTHING_SIZES.forEach(size=>{ const i=document.getElementById(clInpId(item,c.key,size)); sum += i?(parseInt(i.value)||0):0; });
+    const cell=document.getElementById(clInpId(item,c.key,'total')); if(cell) cell.textContent=sum;
+  }));
+}
+function renderClothingLegacy(){
+  const box = document.getElementById('clothing-legacy');
+  const leg = clothingData._legacy;
+  if(!leg){ box.innerHTML=''; return; }
+  const lines = Object.keys(leg).map(item=>{
+    const parts = CLOTHING_SIZES.filter(sz=>leg[item] && leg[item][sz]).map(sz=>sz+': '+leg[item][sz]);
+    return parts.length ? '<b>'+item+'</b> – '+parts.join(', ') : '';
+  }).filter(Boolean);
+  if(!lines.length){ box.innerHTML=''; return; }
+  box.innerHTML = '<div class="cl-legacy">⚠️ כמויות מהמלאי הקודם (לפני חלוקה לצבעים) – יש לשייך אותן לאפור/כחול בטבלה:<br>'+lines.join('<br>')+
+    '<div style="margin-top:6px"><button onclick="dismissClothingLegacy()" style="background:none;border:1px solid var(--dark);border-radius:6px;padding:4px 10px;font-family:Heebo,Arial;font-size:12px;cursor:pointer">סיימתי לשייך – הסתר</button></div></div>';
+}
+function dismissClothingLegacy(){ delete clothingData._legacy; renderClothingLegacy(); }
+function migrateClothingData(raw){
+  // ממיר מבנה ישן item→size→number למבנה החדש, ושומר את הישן ב-_legacy
+  const out = {}; const legacy = raw._legacy ? {...raw._legacy} : {};
+  let hasLegacy = !!raw._legacy;
+  Object.keys(raw).forEach(item=>{
+    if(item==='_legacy') return;
+    const v = raw[item]; if(!v || typeof v!=='object') return;
+    const isOld = CLOTHING_SIZES.some(sz=>typeof v[sz]==='number');
+    if(isOld){
+      if(CLOTHING_SIZES.some(sz=>v[sz])){ legacy[item]=v; hasLegacy=true; }
+    } else out[item]=v;
+  });
+  if(hasLegacy) out._legacy = legacy;
+  return out;
 }
 async function loadClothingFromFirebase(){
   try {
     const doc = await db.collection('clothing').doc('inventory').get();
-    clothingData = doc.exists ? doc.data() : {};
+    clothingData = migrateClothingData(doc.exists ? doc.data() : {});
   } catch(e){ clothingData = {}; }
   buildClothingTable();
 }
@@ -3193,11 +3266,15 @@ async function saveClothing(){
   const data = {};
   CLOTHING_ITEMS.forEach(item=>{
     data[item] = {};
-    CLOTHING_SIZES.forEach(size=>{
-      const inp = document.getElementById('cl_'+item.replace(/[^a-zA-Zא-ת]/g,'_')+'_'+size);
-      data[item][size] = inp ? (parseInt(inp.value)||0) : 0;
+    CLOTHING_COLORS.forEach(c=>{
+      data[item][c.key] = {};
+      CLOTHING_SIZES.forEach(size=>{
+        const inp = document.getElementById(clInpId(item,c.key,size));
+        data[item][c.key][size] = inp ? (parseInt(inp.value)||0) : 0;
+      });
     });
   });
+  if(clothingData._legacy) data._legacy = clothingData._legacy;
   clothingData = data;
   try {
     await db.collection('clothing').doc('inventory').set(data);
